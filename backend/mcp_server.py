@@ -100,25 +100,73 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
     theme = analysis.get("card_theme", "builder")
     
     theme_configs = {
-        "hacker": {"bg": "bg-[#0a0a0a]", "text": "text-green-400", "border": "border-green-900", "accent": "bg-green-900/30", "card": "bg-black/80"},
-        "builder": {"bg": "bg-[#f8fafc]", "text": "text-slate-900", "border": "border-blue-200", "accent": "bg-blue-500/10", "card": "bg-white/80"},
-        "researcher": {"bg": "bg-[#ffffff]", "text": "text-gray-900", "border": "border-gray-200", "accent": "bg-gray-100", "card": "bg-white/90"},
-        "designer": {"bg": "bg-[#faf5ff]", "text": "text-purple-900", "border": "border-purple-200", "accent": "bg-purple-500/10", "card": "bg-white/80"},
-        "open-source-hero": {"bg": "bg-[#fffbeb]", "text": "text-yellow-900", "border": "border-yellow-200", "accent": "bg-yellow-500/10", "card": "bg-white/80"}
+        "hacker": {
+            "bg": "bg-[#020617]", 
+            "text": "text-[#22c55e]", 
+            "border": "border-[#22c55e]/30", 
+            "accent": "bg-[#22c55e]/10", 
+            "card": "bg-[#020617]/80",
+            "glow": "shadow-[0_0_50px_rgba(34,197,94,0.15)]",
+            "stat_bg": "bg-[#22c55e]/5",
+            "secondary": "text-[#4ade80]"
+        },
+        "builder": {
+            "bg": "bg-[#f8fafc]", 
+            "text": "text-[#0f172a]", 
+            "border": "border-[#e2e8f0]", 
+            "accent": "bg-[#3b82f6]/10", 
+            "card": "bg-white/90",
+            "glow": "shadow-[0_20px_50px_rgba(0,0,0,0.05)]",
+            "stat_bg": "bg-slate-50",
+            "secondary": "text-slate-500"
+        },
+        "researcher": {
+            "bg": "bg-[#fdfdfd]", 
+            "text": "text-[#1e293b]", 
+            "border": "border-[#cbd5e1]", 
+            "accent": "bg-[#64748b]/10", 
+            "card": "bg-white/95",
+            "glow": "shadow-xl",
+            "stat_bg": "bg-slate-50",
+            "secondary": "text-slate-500"
+        },
+        "designer": {
+            "bg": "bg-[#faf5ff]", 
+            "text": "text-[#4c1d95]", 
+            "border": "border-[#ddd6fe]", 
+            "accent": "bg-[#8b5cf6]/10", 
+            "card": "bg-white/90",
+            "glow": "shadow-[0_20px_50px_rgba(139,92,246,0.08)]",
+            "stat_bg": "bg-purple-50",
+            "secondary": "text-purple-600/70"
+        },
+        "open-source-hero": {
+            "bg": "bg-[#fffbeb]", 
+            "text": "text-[#78350f]", 
+            "border": "border-[#fde68a]", 
+            "accent": "bg-[#f59e0b]/10", 
+            "card": "bg-white/90",
+            "glow": "shadow-[0_20px_50px_rgba(245,158,11,0.08)]",
+            "stat_bg": "bg-amber-50",
+            "secondary": "text-amber-700/70"
+        }
     }
     
     cfg = theme_configs.get(theme, theme_configs["builder"])
     
-    skills_html = "".join([f'<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider {cfg["accent"]}">{skill}</span>' for skill in analysis.get("top_skills", [])])
+    skills_html = "".join([f'<span class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider {cfg["accent"]} border {cfg["border"]}">{skill}</span>' for skill in analysis.get("top_skills", [])[:4]])
     
     repos_html = "".join([
         f'''
-        <div class="flex-1 p-2 border rounded-lg {cfg["border"]} {cfg["card"]} shadow-sm">
-            <h4 class="font-bold text-[11px] truncate">{repo["name"]}</h4>
-            <p class="text-[9px] opacity-70 line-clamp-1 mb-1">{repo["description"] or "No description"}</p>
-            <div class="flex justify-between items-center text-[8px] font-bold">
-                <span class="flex items-center gap-1">⭐ {repo["stars"]}</span>
-                <span class="opacity-60">{repo["language"] or ""}</span>
+        <div class="flex-1 min-w-0 p-4 border rounded-2xl {cfg["border"]} {cfg["card"]} hover:translate-y-[-4px] transition-all duration-300">
+            <h4 class="font-bold text-[13px] truncate mb-1">{repo["name"]}</h4>
+            <p class="text-[11px] {cfg["secondary"]} line-clamp-2 mb-3 h-8 leading-snug">{repo["description"] or "No description provided."}</p>
+            <div class="flex justify-between items-center text-[11px] font-bold">
+                <span class="flex items-center gap-1.5">
+                    <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    {repo["stars"]}
+                </span>
+                <span class="px-2 py-0.5 rounded-md {cfg["accent"]} border {cfg["border"]} text-[9px] uppercase">{repo["language"] or "Code"}</span>
             </div>
         </div>
         ''' for repo in github_data.get("top_repos", [])[:3]
@@ -126,51 +174,74 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
 
     html = f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
+        <meta charset="UTF-8">
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-            body {{ font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }}
-            .card-glass {{ backdrop-filter: blur(10px); }}
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+            body {{ 
+                font-family: 'Plus Jakarta Sans', sans-serif; 
+                margin: 0; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                min-height: 100vh;
+                background-color: transparent;
+                padding: 40px;
+            }}
+            .card-glass {{ 
+                backdrop-filter: blur(20px) saturate(160%);
+                -webkit-backdrop-filter: blur(20px) saturate(160%);
+            }}
+            .text-balance {{ text-wrap: balance; }}
         </style>
     </head>
-    <body class="p-2 {cfg["bg"]} {cfg["text"]}">
-        <div class="w-[600px] h-[320px] relative overflow-hidden rounded-2xl border-2 {cfg["border"]} shadow-2xl flex flex-col {cfg["card"]} card-glass">
-            <!-- Decorative background blob -->
-            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-20 {cfg["accent"]}"></div>
+    <body class="{cfg["text"]}">
+        <div class="w-[840px] h-[480px] relative overflow-hidden rounded-[3rem] border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} card-glass">
+            <!-- Decorative background elements -->
+            <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 {cfg["accent"]}"></div>
+            <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full blur-[100px] opacity-15 {cfg["accent"]}"></div>
             
-            <div class="flex-1 flex p-6 gap-6">
+            <div class="flex-1 flex py-10 px-12 gap-10 my-10">
                 <!-- Left: Profile Info -->
-                <div class="w-1/3 flex flex-col items-center text-center justify-center border-r {cfg["border"]} pr-6">
-                    <img src="{github_data.get("avatar_url")}" class="w-24 h-24 rounded-2xl border-2 {cfg["border"]} shadow-lg mb-4 object-cover transform rotate-1">
-                    <h2 class="text-xl font-extrabold leading-tight mb-1">{github_data.get("name")}</h2>
-                    <p class="text-xs font-bold opacity-50 mb-3">@{username}</p>
-                    <div class="flex flex-wrap justify-center gap-1.5">
+                <div class="w-[30%] flex flex-col items-center text-center">
+                    <div class="relative mb-8">
+                        <div class="absolute -inset-2 rounded-[2.5rem] blur-md opacity-30 {cfg["accent"]}"></div>
+                        <img src="{github_data.get("avatar_url")}" class="relative w-36 h-36 rounded-[2.2rem] border-2 {cfg["border"]} shadow-2xl object-cover ring-4 ring-white/10">
+                    </div>
+                    <h2 class="text-3xl font-extrabold leading-tight mb-2 tracking-tight">{github_data.get("name")}</h2>
+                    <p class="text-base font-semibold opacity-40 mb-6 italic">@{username}</p>
+                    <div class="flex flex-wrap justify-center gap-2.5">
                         {skills_html}
                     </div>
                 </div>
                 
                 <!-- Right: Stats and Content -->
-                <div class="w-2/3 flex flex-col justify-between py-2">
-                    <div>
-                        <p class="text-sm italic leading-relaxed mb-4 opacity-90">"{analysis.get("developer_vibe")}"</p>
+                <div class="w-[70%] flex flex-col">
+                    <div class="flex-1">
+                        <div class="relative mb-8 pt-2">
+                            <span class="absolute -left-6 -top-2 text-5xl opacity-10 font-serif">"</span>
+                            <p class="text-[17px] font-medium leading-relaxed opacity-90 pr-6 text-balance">
+                                {analysis.get("developer_vibe")}
+                            </p>
+                        </div>
                         
-                        <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="p-2.5 rounded-xl {cfg["accent"]} border {cfg["border"]}">
-                                <div class="text-[10px] uppercase font-bold opacity-50 mb-0.5">Repositories</div>
-                                <div class="text-xl font-extrabold">{github_data.get("public_repos")}</div>
+                        <div class="grid grid-cols-2 gap-5 mb-10">
+                            <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
+                                <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Repositories</span>
+                                <span class="text-4xl font-extrabold">{github_data.get("public_repos")}</span>
                             </div>
-                            <div class="p-2.5 rounded-xl {cfg["accent"]} border {cfg["border"]}">
-                                <div class="text-[10px] uppercase font-bold opacity-50 mb-0.5">Followers</div>
-                                <div class="text-xl font-extrabold">{github_data.get("followers")}</div>
+                            <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
+                                <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
+                                <span class="text-4xl font-extrabold">{github_data.get("followers")}</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div>
-                        <h3 class="text-[10px] font-extrabold uppercase mb-2 opacity-40 tracking-[0.2em]">Signature Repositories</h3>
-                        <div class="flex gap-2">
+                    <div class="mt-auto">
+                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">Signature Projects</h3>
+                        <div class="flex gap-4">
                             {repos_html}
                         </div>
                     </div>
@@ -178,13 +249,20 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
             </div>
             
             <!-- Footer -->
-            <div class="px-6 py-2.5 border-t {cfg["border"]} flex justify-between items-center text-[9px] font-bold uppercase tracking-wider opacity-60 bg-white/5">
-                <span>Verification ID: {username.upper()}-GEN-2026</span>
-                <span class="flex items-center gap-2">
-                    {analysis.get("fun_fact", "")}
-                    <span class="h-1 w-1 rounded-full bg-current"></span>
-                    Dev Card AI
-                </span>
+            <div class="px-10 py-6 border-t {cfg["border"]} flex justify-between items-center bg-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="flex gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.2s"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" style="animation-delay: 0.4s"></span>
+                    </div>
+                    <span class="text-[11px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID: {username.upper()}</span>
+                </div>
+                <div class="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
+                    <span class="opacity-60 italic normal-case font-medium">{analysis.get("fun_fact", "")}</span>
+                    <div class="h-4 w-px {cfg["border"]}"></div>
+                    <span class="opacity-80">Dev Card AI 2026</span>
+                </div>
             </div>
         </div>
     </body>
