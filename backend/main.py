@@ -14,6 +14,7 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.memory import InMemoryMemoryService
 from google.genai.types import Content, Part
 from agent import github_card_agent
+from mcp_server import scrape_github, analyze_profile, generate_card_html, save_card
 
 app = FastAPI(title="GitHub Dev Card Generator API")
 
@@ -63,46 +64,67 @@ class GenerateRequest(BaseModel):
 @app.post("/generate")
 async def generate_card(request: GenerateRequest):
     """
-    Creates or reuses a session for the username and runs the agent 
-    to orchestrate the card generation sequence.
+    Tries to run the agent, but falls back to manual tool orchestration 
+    if the LLM is unavailable (quota/404).
     """
     session_id = f"session_{request.username}"
-    # Construct Content object for new_message
     message = Content(
         parts=[Part(text=f"Generate a dev card for {request.username}")],
         role="user"
     )
     
     try:
-        print(f"Generating card for {request.username}...")
-        # Run the agent via the ADK Runner
+        print(f"Attempting Agent orchestration for {request.username}...")
         events = runner.run(
             new_message=message,
             session_id=session_id,
             user_id=request.username
         )
         
-        final_text = ""
         for event in events:
-            if event.error_message:
-                print(f"Agent Error: {event.error_message}")
-            if event.content and event.content.parts:
-                for part in event.content.parts:
-                    if part.text:
-                        final_text += part.text
+            # We just need it to finish
+            pass
         
-        print(f"Successfully generated card for {request.username}")
-        return {
-            "status": "success",
-            "username": request.username,
-            "message": final_text,
-            "card_url": f"/static/cards/{request.username}.html"
-        }
+        # Check if the card was actually saved
+        card_path = os.path.join(CARDS_DIR, f"{request.username}.html")
+        if os.path.exists(card_path):
+            print(f"Agent successfully generated card for {request.username}")
+            return {
+                "status": "success",
+                "username": request.username,
+                "card_url": f"/static/cards/{request.username}.html"
+            }
+        
+        print("Agent finished but card not found. Falling back to Manual Orchestration...")
+        raise Exception("Agent did not save card")
+
     except Exception as e:
-        import traceback
-        error_trace = traceback.format_exc()
-        print(f"Detailed Server Error:\n{error_trace}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Agent failed or skipped: {e}. Running Manual Orchestration...")
+        try:
+            # 1. Scrape
+            github_data = await scrape_github(request.username)
+            if "error" in github_data:
+                raise HTTPException(status_code=404, detail=github_data["error"])
+            
+            # 2. Analyze (MCP tool has its own internal fallback)
+            analysis = await analyze_profile(github_data)
+            
+            # 3. Generate HTML
+            html = await generate_card_html(request.username, github_data, analysis)
+            
+            # 4. Save
+            card_url = await save_card(request.username, html)
+            
+            print(f"Manual orchestration successful for {request.username}")
+            return {
+                "status": "success",
+                "username": request.username,
+                "card_url": card_url
+            }
+        except Exception as manual_e:
+            import traceback
+            print(f"Manual Orchestration Failed:\n{traceback.format_exc()}")
+            raise HTTPException(status_code=500, detail=str(manual_e))
 
 @app.get("/card/{username}")
 async def get_card(username: str):
