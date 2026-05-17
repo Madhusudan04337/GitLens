@@ -9,7 +9,7 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
 -   **AI Vibe Analysis:** Uses **Gemini 1.5 Flash** to analyze your profile and generate a creative personality description.
 -   **Smart Repository Selection:** Automatically prioritizes your **Pinned Repositories** using the GitHub GraphQL API, falling back to recent repositories if none are pinned.
 -   **Premium Themes:** Five distinct visual identities (Hacker, Builder, Researcher, Designer, Open Source Hero) that adapt to your profile data.
--   **High-Fidelity Design:** Ultra-premium landscape layout (840x480px) with glassmorphism effects, fluid typography, and interactive hover states.
+-   **High-Fidelity Responsive Design:** Ultra-premium landscape layout for desktop (840x480px) and a seamless, edge-to-edge stacked layout for mobile. Features glassmorphism, fluid typography, and interactive hover states.
 -   **Shareable Identity:** Generates unique verification IDs and standalone HTML cards perfect for embedding in your portfolio or sharing on social media.
 
 ## 🚀 Tech Stack
@@ -67,8 +67,8 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
 
 The project is currently deployed on Google Cloud Run and can be accessed via the following public URLs:
 
-- **Frontend:** [https://github-card-frontend-143544260816.us-central1.run.app](https://github-card-frontend-143544260816.us-central1.run.app)
-- **Backend API:** [https://github-card-backend-143544260816.us-central1.run.app](https://github-card-backend-143544260816.us-central1.run.app)
+- **Frontend:** [https://github-card-frontend-719852595489.us-central1.run.app](https://github-card-frontend-719852595489.us-central1.run.app)
+- **Backend API:** [https://github-card-backend-719852595489.us-central1.run.app](https://github-card-backend-719852595489.us-central1.run.app)
 
 ## 🎨 Card Themes
 
