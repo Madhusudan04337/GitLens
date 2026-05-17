@@ -1,4 +1,9 @@
 import os
+import sys
+
+# Ensure backend directory is in path for absolute imports
+sys.path.append(os.path.dirname(__file__))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -7,6 +12,7 @@ from pydantic import BaseModel
 from google.adk import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.memory import InMemoryMemoryService
+from google.genai.types import Content, Part
 from agent import github_card_agent
 
 app = FastAPI(title="GitHub Dev Card Generator API")
@@ -48,11 +54,15 @@ async def generate_card(request: GenerateRequest):
     to orchestrate the card generation sequence.
     """
     session_id = f"session_{request.username}"
-    message = f"Generate a dev card for {request.username}"
+    # Construct Content object for new_message
+    message = Content(
+        parts=[Part(text=f"Generate a dev card for {request.username}")],
+        role="user"
+    )
     
     try:
+        print(f"Generating card for {request.username}...")
         # Run the agent via the ADK Runner
-        # The runner returns a synchronous generator of events
         events = runner.run(
             new_message=message,
             session_id=session_id,
@@ -61,12 +71,14 @@ async def generate_card(request: GenerateRequest):
         
         final_text = ""
         for event in events:
+            if event.error_message:
+                print(f"Agent Error: {event.error_message}")
             if event.content and event.content.parts:
                 for part in event.content.parts:
                     if part.text:
                         final_text += part.text
         
-        # The final result should be the path returned by save_card tool
+        print(f"Successfully generated card for {request.username}")
         return {
             "status": "success",
             "username": request.username,
@@ -75,7 +87,8 @@ async def generate_card(request: GenerateRequest):
         }
     except Exception as e:
         import traceback
-        print(traceback.format_exc())
+        error_trace = traceback.format_exc()
+        print(f"Detailed Server Error:\n{error_trace}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/card/{username}")
