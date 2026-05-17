@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(__file__))
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from google.adk import Runner
 from google.adk.sessions import InMemorySessionService
@@ -26,13 +26,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Ensure static directory exists
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+# Paths
+BASE_DIR = os.path.dirname(__file__)
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
 CARDS_DIR = os.path.join(STATIC_DIR, "cards")
+
 os.makedirs(CARDS_DIR, exist_ok=True)
 
-# Mount static files to serve cards
+# Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    """Serve the React frontend from the backend."""
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_path):
+        with open(index_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>Frontend index.html not found</h1>"
 
 # Initialize ADK Services and Runner
 session_service = InMemorySessionService()
