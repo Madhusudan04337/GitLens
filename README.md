@@ -63,6 +63,13 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
     python main.py
     ```
 
+## 🌐 Live Deployment
+
+The project is currently deployed on Google Cloud Run and can be accessed via the following public URLs:
+
+- **Frontend:** [https://github-card-frontend-143544260816.us-central1.run.app](https://github-card-frontend-143544260816.us-central1.run.app)
+- **Backend API:** [https://github-card-backend-143544260816.us-central1.run.app](https://github-card-backend-143544260816.us-central1.run.app)
+
 ## 🎨 Card Themes
 
 -   **Hacker:** Dark neon aesthetics with matrix-inspired glows.
