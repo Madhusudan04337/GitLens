@@ -41,7 +41,8 @@ runner = Runner(
     agent=github_card_agent,
     app_name="GitHubCardGenerator",
     session_service=session_service,
-    memory_service=memory_service
+    memory_service=memory_service,
+    auto_create_session=True
 )
 
 class GenerateRequest(BaseModel):
