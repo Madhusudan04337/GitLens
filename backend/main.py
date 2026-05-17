@@ -40,12 +40,12 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    """Serve the React frontend from the backend."""
+    """Serve the React frontend from the backend if available, otherwise show a default message."""
     index_path = os.path.join(FRONTEND_DIR, "index.html")
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1>Frontend index.html not found</h1>"
+    return "<h1>GitLens Backend API is running!</h1><p>Please use the separate Frontend service URL to view the application.</p>"
 
 # Initialize ADK Services and Runner
 session_service = InMemorySessionService()

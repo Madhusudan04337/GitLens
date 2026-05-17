@@ -98,6 +98,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        window.BACKEND_URL = '__BACKEND_URL__';
         const { useState, useEffect } = React;
 
         // Simple SVG Icons to avoid Lucide script conflicts
@@ -125,7 +126,8 @@
                 setCardUrl(null);
 
                 try {
-                    const response = await fetch('/generate', {
+                    const baseUrl = window.BACKEND_URL && window.BACKEND_URL !== '__BACKEND_URL__' ? window.BACKEND_URL : '';
+                    const response = await fetch(`${baseUrl}/generate`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username: username.trim() })
