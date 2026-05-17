@@ -14,5 +14,7 @@ services:
     build: ./frontend
     ports:
       - "80:80"
+    volumes:
+      - ./frontend:/app
     depends_on:
       - backend

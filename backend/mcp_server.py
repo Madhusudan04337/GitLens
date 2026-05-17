@@ -323,10 +323,13 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                     </div>
                     <span class="text-[11px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID: {username.upper()}</span>
                 </div>
-                <div class="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
-                    <span class="opacity-60 italic normal-case font-medium">{analysis.get("fun_fact", "")}</span>
-                    <div class="h-4 w-px {cfg["border"]}"></div>
-                    <span class="opacity-80">Dev Card AI 2026</span>
+                <div class="flex flex-col items-end gap-1">
+                    <div class="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
+                        <span class="opacity-60 italic normal-case font-medium">{analysis.get("fun_fact", "")}</span>
+                        <div class="h-4 w-px {cfg["border"]}"></div>
+                        <span class="opacity-80">Dev Card AI 2026</span>
+                    </div>
+                    <span class="text-[8px] opacity-20 uppercase tracking-tighter">Rendered via GraphQL v4 • Pinned Priority Mode</span>
                 </div>
             </div>
         </div>
