@@ -17,39 +17,90 @@ model = genai.GenerativeModel("gemini-1.5-flash-latest") # Stable free tier mode
 
 @mcp.tool()
 async def scrape_github(username: str) -> dict:
-    """Fetch GitHub profile data and top repositories."""
+    """Fetch GitHub profile data and prioritize pinned repositories."""
     headers = {}
     github_token = os.getenv("GITHUB_TOKEN")
     if github_token:
         headers["Authorization"] = f"token {github_token}"
 
     async with httpx.AsyncClient(headers=headers) as client:
-        # Fetch user profile
+        # Fetch user profile (REST is fine for this)
         user_resp = await client.get(f"https://api.github.com/users/{username}")
         if user_resp.status_code != 200:
             return {"error": f"Failed to fetch user {username}: {user_resp.status_code}"}
         user_data = user_resp.json()
 
-        # Fetch top repositories
-        repos_resp = await client.get(f"https://api.github.com/users/{username}/repos?sort=updated&per_page=10")
-        repos_data = repos_resp.json()
+        top_repos = []
+        repos_type = "Recent Repositories"
 
-    # Process repos
-    top_repos = []
+        # Try to fetch Pinned Repositories via GraphQL if token is available
+        if github_token:
+            gql_query = {
+                "query": """
+                query($username: String!) {
+                  user(login: $username) {
+                    pinnedItems(first: 6, types: REPOSITORY) {
+                      nodes {
+                        ... on Repository {
+                          name
+                          description
+                          stargazerCount
+                          primaryLanguage {
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """,
+                "variables": {"username": username}
+            }
+            try:
+                gql_resp = await client.post(
+                    "https://api.github.com/graphql",
+                    json=gql_query,
+                    headers={"Authorization": f"Bearer {github_token}"}
+                )
+                if gql_resp.status_code == 200:
+                    gql_data = gql_resp.json()
+                    nodes = gql_data.get("data", {}).get("user", {}).get("pinnedItems", {}).get("nodes", [])
+                    if nodes:
+                        for node in nodes:
+                            top_repos.append({
+                                "name": node["name"],
+                                "stars": node["stargazerCount"],
+                                "language": node.get("primaryLanguage", {}).get("name") if node.get("primaryLanguage") else "Code",
+                                "description": node["description"]
+                            })
+                        repos_type = "Signature Projects"
+            except Exception as e:
+                print(f"GraphQL Error: {e}. Falling back to REST.")
+
+        # Fallback to Recent Repositories if no pinned repos found
+        if not top_repos:
+            repos_resp = await client.get(f"https://api.github.com/users/{username}/repos?sort=updated&per_page=10")
+            if repos_resp.status_code == 200:
+                repos_data = repos_resp.json()
+                for repo in repos_data:
+                    if not repo.get("fork") and len(top_repos) < 6:
+                        top_repos.append({
+                            "name": repo["name"],
+                            "stars": repo["stargazers_count"],
+                            "language": repo["language"],
+                            "description": repo["description"]
+                        })
+                repos_type = "Recent Repositories"
+
+    # Calculate top languages from recent repos (for analysis)
     languages = {}
-    for repo in repos_data:
-        if not repo.get("fork") and len(top_repos) < 6:
-            top_repos.append({
-                "name": repo["name"],
-                "stars": repo["stargazers_count"],
-                "language": repo["language"],
-                "description": repo["description"]
-            })
+    # We might need a separate call for full language stats if we want to be thorough, 
+    # but for vibe analysis, the language of the fetched repos is usually enough.
+    for repo in top_repos:
         if repo.get("language"):
             lang = repo["language"]
             languages[lang] = languages.get(lang, 0) + 1
 
-    # Sort languages by usage
     sorted_langs = sorted(languages.items(), key=lambda x: x[1], reverse=True)
     top_languages = [lang for lang, count in sorted_langs[:5]]
 
@@ -61,7 +112,8 @@ async def scrape_github(username: str) -> dict:
         "public_repos": user_data.get("public_repos", 0),
         "followers": user_data.get("followers", 0),
         "top_repos": top_repos,
-        "top_languages": top_languages
+        "top_languages": top_languages,
+        "repos_type": repos_type
     }
 
 @mcp.tool()
@@ -240,7 +292,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                     </div>
                     
                     <div class="mt-auto">
-                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">Signature Projects</h3>
+                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">{github_data.get("repos_type", "Signature Projects")}</h3>
                         <div class="flex gap-4">
                             {repos_html}
                         </div>
