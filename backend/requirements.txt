@@ -2,6 +2,8 @@ fastapi
 uvicorn
 mcp[fastmcp]
 google-adk
+google-generativeai
 pydantic
 python-dotenv
 httpx
+jinja2
