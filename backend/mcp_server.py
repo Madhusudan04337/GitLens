@@ -255,7 +255,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
             <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 {cfg["accent"]}"></div>
             <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full blur-[100px] opacity-15 {cfg["accent"]}"></div>
             
-            <div class="flex-1 flex py-10 px-12 gap-10 my-10">
+            <div class="flex-1 flex p-10 gap-10">
                 <!-- Left: Profile Info -->
                 <div class="w-[30%] flex flex-col items-center text-center">
                     <div class="relative mb-8">
