@@ -126,7 +126,7 @@
                 setCardUrl(null);
 
                 try {
-                    const baseUrl = window.BACKEND_URL && window.BACKEND_URL !== '__BACKEND_URL__' ? window.BACKEND_URL : '';
+                    const baseUrl = window.BACKEND_URL && window.BACKEND_URL !== ('__BACKEND_URL' + '__') ? window.BACKEND_URL : '';
                     
                     if (!baseUrl && window.location.hostname !== 'localhost') {
                         console.warn('BACKEND_URL is not set. API calls will likely fail in production.');
