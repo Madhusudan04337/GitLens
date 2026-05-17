@@ -253,7 +253,6 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                 justify-content: center; 
                 min-height: 100vh;
                 background-color: transparent;
-                padding: 40px;
             }}
             .card-glass {{ 
                 backdrop-filter: blur(20px) saturate(160%);
@@ -262,15 +261,15 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
             .text-balance {{ text-wrap: balance; }}
         </style>
     </head>
-    <body class="{cfg["text"]}">
-        <div class="w-[840px] h-[540px] relative overflow-hidden rounded-[3rem] border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} card-glass">
+    <body class="p-4 md:p-10 {cfg["text"]}">
+        <div class="w-full max-w-[840px] h-auto min-h-[540px] relative overflow-hidden rounded-[2rem] md:rounded-[3rem] border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} card-glass">
             <!-- Decorative background elements -->
             <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 {cfg["accent"]}"></div>
             <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full blur-[100px] opacity-15 {cfg["accent"]}"></div>
             
-            <div class="flex-1 flex p-10 gap-10">
+            <div class="flex-1 flex flex-col md:flex-row p-6 md:p-10 gap-6 md:gap-10">
                 <!-- Left: Profile Info -->
-                <div class="w-[30%] flex flex-col items-center text-center">
+                <div class="w-full md:w-[30%] flex flex-col items-center text-center">
                     <div class="relative mb-8">
                         <div class="absolute -inset-2 rounded-[2.5rem] blur-md opacity-30 {cfg["accent"]}"></div>
                         <img src="{github_data.get("avatar_url")}" class="relative w-36 h-36 rounded-[2.2rem] border-2 {cfg["border"]} shadow-2xl object-cover ring-4 ring-white/10">
@@ -283,7 +282,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                 </div>
                 
                 <!-- Right: Stats and Content -->
-                <div class="w-[70%] flex flex-col">
+                <div class="w-full md:w-[70%] flex flex-col">
                     <div class="flex-1">
                         <div class="relative mb-8 pt-2">
                             <span class="absolute -left-6 -top-2 text-5xl opacity-10 font-serif">"</span>
@@ -305,8 +304,8 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                     </div>
                     
                     <div class="mt-auto">
-                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">{github_data.get("repos_type", "Signature Projects")}</h3>
-                        <div class="flex gap-4">
+                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em] text-center md:text-left">{github_data.get("repos_type", "Signature Projects")}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {repos_html}
                         </div>
                     </div>
@@ -314,7 +313,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
             </div>
             
             <!-- Footer -->
-            <div class="px-10 py-6 border-t {cfg["border"]} flex justify-between items-center bg-white/5">
+            <div class="px-6 md:px-10 py-6 border-t {cfg["border"]} flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
                 <div class="flex items-center gap-4">
                     <div class="flex gap-1">
                         <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
