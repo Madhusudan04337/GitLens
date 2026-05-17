@@ -6,7 +6,9 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv()
+# Find .env in project root
+project_root = Path(__file__).parent.parent.absolute()
+load_dotenv(project_root / ".env")
 
 # Initialize FastMCP server
 mcp = FastMCP("GitHub-Dev-Card-Server")
@@ -18,13 +20,14 @@ model = genai.GenerativeModel("gemini-1.5-flash-latest") # Stable free tier mode
 @mcp.tool()
 async def scrape_github(username: str) -> dict:
     """Fetch GitHub profile data and prioritize pinned repositories."""
-    headers = {}
     github_token = os.getenv("GITHUB_TOKEN")
+    
+    headers = {"Accept": "application/vnd.github.v3+json"}
     if github_token:
         headers["Authorization"] = f"token {github_token}"
 
-    async with httpx.AsyncClient(headers=headers) as client:
-        # Fetch user profile (REST is fine for this)
+    async with httpx.AsyncClient(headers=headers, timeout=10.0) as client:
+        # Fetch user profile
         user_resp = await client.get(f"https://api.github.com/users/{username}")
         if user_resp.status_code != 200:
             return {"error": f"Failed to fetch user {username}: {user_resp.status_code}"}
@@ -35,6 +38,7 @@ async def scrape_github(username: str) -> dict:
 
         # Try to fetch Pinned Repositories via GraphQL if token is available
         if github_token:
+            print(f"Attempting GraphQL for {username}...")
             gql_query = {
                 "query": """
                 query($username: String!) {
@@ -64,21 +68,30 @@ async def scrape_github(username: str) -> dict:
                 )
                 if gql_resp.status_code == 200:
                     gql_data = gql_resp.json()
-                    nodes = gql_data.get("data", {}).get("user", {}).get("pinnedItems", {}).get("nodes", [])
-                    if nodes:
-                        for node in nodes:
-                            top_repos.append({
-                                "name": node["name"],
-                                "stars": node["stargazerCount"],
-                                "language": node.get("primaryLanguage", {}).get("name") if node.get("primaryLanguage") else "Code",
-                                "description": node["description"]
-                            })
-                        repos_type = "Signature Projects"
+                    if "errors" in gql_data:
+                        print(f"GraphQL Errors: {gql_data['errors']}")
+                    else:
+                        nodes = gql_data.get("data", {}).get("user", {}).get("pinnedItems", {}).get("nodes", [])
+                        if nodes:
+                            print(f"Found {len(nodes)} pinned repos.")
+                            for node in nodes:
+                                top_repos.append({
+                                    "name": node["name"],
+                                    "stars": node["stargazerCount"],
+                                    "language": node.get("primaryLanguage", {}).get("name") if node.get("primaryLanguage") else "Code",
+                                    "description": node["description"]
+                                })
+                            repos_type = "Signature Projects"
+                else:
+                    print(f"GraphQL Failed with status {gql_resp.status_code}: {gql_resp.text}")
             except Exception as e:
-                print(f"GraphQL Error: {e}. Falling back to REST.")
+                print(f"GraphQL Exception: {e}")
+        else:
+            print("No GITHUB_TOKEN found, skipping GraphQL.")
 
         # Fallback to Recent Repositories if no pinned repos found
         if not top_repos:
+            print(f"Falling back to REST for {username}...")
             repos_resp = await client.get(f"https://api.github.com/users/{username}/repos?sort=updated&per_page=10")
             if repos_resp.status_code == 200:
                 repos_data = repos_resp.json()
