@@ -5,8 +5,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from google.adk import Runner
-from google.adk.services import InMemorySessionService, InMemoryMemoryService
-from .agent import github_card_agent
+from google.adk.sessions import InMemorySessionService
+from google.adk.memory import InMemoryMemoryService
+from agent import github_card_agent
 
 app = FastAPI(title="GitHub Dev Card Generator API")
 
@@ -32,6 +33,7 @@ session_service = InMemorySessionService()
 memory_service = InMemoryMemoryService()
 runner = Runner(
     agent=github_card_agent,
+    app_name="GitHubCardGenerator",
     session_service=session_service,
     memory_service=memory_service
 )
@@ -50,22 +52,30 @@ async def generate_card(request: GenerateRequest):
     
     try:
         # Run the agent via the ADK Runner
-        # Note: In a real streaming scenario, we would iterate over runner.run()
-        # For simplicity in this endpoint, we'll collect the result.
-        response = await runner.run(
-            input=message,
-            session_id=session_id
+        # The runner returns a synchronous generator of events
+        events = runner.run(
+            new_message=message,
+            session_id=session_id,
+            user_id=request.username
         )
         
+        final_text = ""
+        for event in events:
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        final_text += part.text
+        
         # The final result should be the path returned by save_card tool
-        # The agent is instructed to return the final path.
         return {
             "status": "success",
             "username": request.username,
-            "message": response.text,
+            "message": final_text,
             "card_url": f"/static/cards/{request.username}.html"
         }
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/card/{username}")
