@@ -263,7 +263,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
         </style>
     </head>
     <body class="{cfg["text"]}">
-        <div class="w-[840px] h-[480px] relative overflow-hidden rounded-[3rem] border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} card-glass">
+        <div class="w-[840px] h-[540px] relative overflow-hidden rounded-[3rem] border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} card-glass">
             <!-- Decorative background elements -->
             <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 {cfg["accent"]}"></div>
             <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full blur-[100px] opacity-15 {cfg["accent"]}"></div>
