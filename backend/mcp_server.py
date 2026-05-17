@@ -181,13 +181,20 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
 @mcp.tool()
 async def save_card(username: str, html: str) -> str:
     """Save the HTML to static/cards/{username}.html and return the path."""
-    output_dir = Path("static/cards")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    file_path = output_dir / f"{username}.html"
-    file_path.write_text(html, encoding="utf-8")
-    
-    return f"/static/cards/{username}.html"
+    try:
+        # Use absolute path based on this file's location
+        backend_dir = Path(__file__).parent.absolute()
+        output_dir = backend_dir / "static" / "cards"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        file_path = output_dir / f"{username}.html"
+        file_path.write_text(html, encoding="utf-8")
+        
+        print(f"Tool: Saved card for {username} at {file_path}")
+        return f"/static/cards/{username}.html"
+    except Exception as e:
+        print(f"Tool Error in save_card: {e}")
+        return f"Error saving card: {e}"
 
 if __name__ == "__main__":
     mcp.run()
