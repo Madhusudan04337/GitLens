@@ -13,12 +13,17 @@ mcp = FastMCP("GitHub-Dev-Card-Server")
 
 # Configure Gemini
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash") # Using latest flash model
+model = genai.GenerativeModel("gemini-1.5-flash-latest") # Stable free tier model
 
 @mcp.tool()
 async def scrape_github(username: str) -> dict:
     """Fetch GitHub profile data and top repositories."""
-    async with httpx.AsyncClient() as client:
+    headers = {}
+    github_token = os.getenv("GITHUB_TOKEN")
+    if github_token:
+        headers["Authorization"] = f"token {github_token}"
+
+    async with httpx.AsyncClient(headers=headers) as client:
         # Fetch user profile
         user_resp = await client.get(f"https://api.github.com/users/{username}")
         if user_resp.status_code != 200:
@@ -76,8 +81,18 @@ async def analyze_profile(github_data: dict) -> dict:
     }}
     """
     
-    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-    return json.loads(response.text)
+    try:
+        response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Gemini API Error: {e}. Falling back to mock analysis.")
+        # Mock fallback analysis
+        return {
+            "developer_vibe": f"A dedicated developer with {github_data.get('public_repos')} repos and a passion for {github_data.get('top_languages', ['coding'])[0]}.",
+            "top_skills": github_data.get("top_languages", ["Python", "JavaScript", "Cloud"])[:3],
+            "fun_fact": "This developer's code is so clean, it cleans the screen.",
+            "card_theme": "builder"
+        }
 
 @mcp.tool()
 async def generate_card_html(username: str, github_data: dict, analysis: dict) -> str:
