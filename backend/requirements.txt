@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+mcp[fastmcp]
+google-adk
+pydantic
+python-dotenv
+httpx

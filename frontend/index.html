@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Dev Card Generator</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const App = () => {
+            const [username, setUsername] = React.useState('');
+            const [result, setResult] = React.useState(null);
+
+            const handleGenerate = async () => {
+                const response = await fetch('/api/generate-card', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await response.json();
+                setResult(data.result);
+            };
+
+            return (
+                <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                    <h1 class="text-2xl font-bold mb-4">GitHub Dev Card Generator</h1>
+                    <input 
+                        type="text" 
+                        placeholder="GitHub Username" 
+                        class="w-full p-2 border border-gray-300 rounded mb-4"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <button 
+                        onClick={handleGenerate}
+                        class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                    >
+                        Generate Card
+                    </button>
+                    {result && (
+                        <div class="mt-6 p-4 bg-gray-50 rounded">
+                            <pre class="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
