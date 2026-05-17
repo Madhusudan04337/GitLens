@@ -1,21 +1,29 @@
 import os
 import http.server
 import socketserver
+import io
 
 PORT = 80
 BACKEND_URL = os.environ.get("BACKEND_URL", "")
 
-# Inject the backend URL into the HTML file
+# Load the template once
 with open("index.html", "r", encoding="utf-8") as f:
-    content = f.read()
-
-content = content.replace("__BACKEND_URL__", BACKEND_URL)
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(content)
+    TEMPLATE_CONTENT = f.read()
 
 # Start the simple HTTP server
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/" or self.path == "/index.html":
+            content = TEMPLATE_CONTENT.replace("__BACKEND_URL__", BACKEND_URL)
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Cache-Control", "no-store, must-revalidate")
+            self.send_header("Content-Length", len(content.encode('utf-8')))
+            self.end_headers()
+            self.wfile.write(content.encode('utf-8'))
+        else:
+            super().do_GET()
+
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, must-revalidate')
         super().end_headers()
