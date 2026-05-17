@@ -127,11 +127,27 @@
 
                 try {
                     const baseUrl = window.BACKEND_URL && window.BACKEND_URL !== '__BACKEND_URL__' ? window.BACKEND_URL : '';
+                    
+                    if (!baseUrl && window.location.hostname !== 'localhost') {
+                        console.warn('BACKEND_URL is not set. API calls will likely fail in production.');
+                    }
+
                     const response = await fetch(`${baseUrl}/generate`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username: username.trim() })
                     });
+
+                    // Handle non-JSON responses (like 404/501 HTML pages)
+                    const contentType = response.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        const text = await response.text();
+                        console.error('Non-JSON Response:', text);
+                        if (response.status === 501) {
+                            throw new Error('Backend URL missing or incorrect (Frontend received POST request). Check BACKEND_URL env var.');
+                        }
+                        throw new Error(`Server returned HTML instead of JSON (Status ${response.status}). Is the Backend URL correct?`);
+                    }
 
                     const data = await response.json();
                     
@@ -139,7 +155,12 @@
                         throw new Error(data.detail || 'Profile not found');
                     }
                     
-                    setCardUrl(data.card_url);
+                    // Prepend baseUrl if card_url is relative and baseUrl is set
+                    let finalCardUrl = data.card_url;
+                    if (finalCardUrl.startsWith('/') && baseUrl) {
+                        finalCardUrl = baseUrl + finalCardUrl;
+                    }
+                    setCardUrl(finalCardUrl);
                 } catch (err) {
                     console.error('Fetch Error:', err);
                     setError(err.message || 'Oops! GitHub profile not found or API error.');
@@ -149,7 +170,7 @@
             };
 
             const copyToClipboard = () => {
-                const fullUrl = window.location.origin + cardUrl;
+                const fullUrl = cardUrl.startsWith('http') ? cardUrl : window.location.origin + cardUrl;
                 navigator.clipboard.writeText(fullUrl);
                 setToast('Link copied to clipboard!');
                 setTimeout(() => setToast(null), 3000);

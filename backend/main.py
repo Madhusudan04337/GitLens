@@ -65,66 +65,78 @@ class GenerateRequest(BaseModel):
 async def generate_card(request: GenerateRequest):
     """
     Tries to run the agent, but falls back to manual tool orchestration 
-    if the LLM is unavailable (quota/404).
+    if the LLM is unavailable (quota/404) or if the runner fails.
     """
-    session_id = f"session_{request.username}"
+    import time
+    timestamp = int(time.time())
+    session_id = f"session_{request.username}_{timestamp}"
     message = Content(
         parts=[Part(text=f"Generate a dev card for {request.username}")],
         role="user"
     )
     
     try:
-        print(f"Attempting Agent orchestration for {request.username}...")
+        print(f"[{timestamp}] Attempting Agent orchestration for {request.username}...")
         events = runner.run(
             new_message=message,
             session_id=session_id,
             user_id=request.username
         )
         
+        # Consuming events to ensure completion
         for event in events:
-            # We just need it to finish
+            print(f"[{timestamp}] Event: {event}")
             pass
         
         # Check if the card was actually saved
         card_path = os.path.join(CARDS_DIR, f"{request.username}.html")
         if os.path.exists(card_path):
-            print(f"Agent successfully generated card for {request.username}")
+            print(f"[{timestamp}] Agent successfully generated card for {request.username}")
             return {
                 "status": "success",
                 "username": request.username,
                 "card_url": f"/static/cards/{request.username}.html"
             }
         
-        print("Agent finished but card not found. Falling back to Manual Orchestration...")
-        raise Exception("Agent did not save card")
+        print(f"[{timestamp}] Agent finished but card not found. Falling back to Manual Orchestration...")
 
     except Exception as e:
-        print(f"Agent failed or skipped: {e}. Running Manual Orchestration...")
-        try:
-            # 1. Scrape
-            github_data = await scrape_github(request.username)
-            if "error" in github_data:
-                raise HTTPException(status_code=404, detail=github_data["error"])
-            
-            # 2. Analyze (MCP tool has its own internal fallback)
-            analysis = await analyze_profile(github_data)
-            
-            # 3. Generate HTML
-            html = await generate_card_html(request.username, github_data, analysis)
-            
-            # 4. Save
-            card_url = await save_card(request.username, html)
-            
-            print(f"Manual orchestration successful for {request.username}")
-            return {
-                "status": "success",
-                "username": request.username,
-                "card_url": card_url
-            }
-        except Exception as manual_e:
-            import traceback
-            print(f"Manual Orchestration Failed:\n{traceback.format_exc()}")
-            raise HTTPException(status_code=500, detail=str(manual_e))
+        print(f"[{timestamp}] Agent failed: {e}. Running Manual Orchestration...")
+        
+    # Manual Fallback Logic
+    try:
+        print(f"[{timestamp}] Starting Manual Orchestration for {request.username}...")
+        # 1. Scrape
+        github_data = await scrape_github(request.username)
+        if "error" in github_data:
+            print(f"[{timestamp}] Scrape Failed: {github_data['error']}")
+            raise HTTPException(status_code=404, detail=github_data["error"])
+        
+        # 2. Analyze
+        print(f"[{timestamp}] Analyzing profile...")
+        analysis = await analyze_profile(github_data)
+        
+        # 3. Generate HTML
+        print(f"[{timestamp}] Generating HTML...")
+        html = await generate_card_html(request.username, github_data, analysis)
+        
+        # 4. Save
+        print(f"[{timestamp}] Saving card...")
+        card_url = await save_card(request.username, html)
+        
+        if "Error" in card_url:
+            raise Exception(card_url)
+
+        print(f"[{timestamp}] Manual orchestration successful for {request.username}")
+        return {
+            "status": "success",
+            "username": request.username,
+            "card_url": card_url
+        }
+    except Exception as manual_e:
+        import traceback
+        print(f"[{timestamp}] Manual Orchestration Failed:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(manual_e))
 
 @app.get("/card/{username}")
 async def get_card(username: str):
