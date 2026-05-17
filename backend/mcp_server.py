@@ -242,6 +242,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
     <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -261,68 +262,131 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
             .text-balance {{ text-wrap: balance; }}
         </style>
     </head>
-    <body class="p-4 md:p-10 {cfg["text"]}">
-        <div class="w-full max-w-[840px] h-auto min-h-[540px] relative overflow-hidden rounded-[2rem] md:rounded-[3rem] border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} card-glass">
+    <body class="p-0 md:p-10 {cfg["text"]}">
+        <div class="w-full max-w-[840px] h-auto min-h-[540px] relative overflow-hidden rounded-none md:rounded-[3rem] border-0 md:border-2 {cfg["border"]} {cfg["glow"]} flex flex-col {cfg["card"]} md:card-glass">
             <!-- Decorative background elements -->
             <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 {cfg["accent"]}"></div>
             <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full blur-[100px] opacity-15 {cfg["accent"]}"></div>
-            
-            <div class="flex-1 flex flex-col md:flex-row p-6 md:p-10 gap-6 md:gap-10">
-                <!-- Left: Profile Info -->
-                <div class="w-full md:w-[30%] flex flex-col items-center text-center">
-                    <div class="relative mb-8">
-                        <div class="absolute -inset-2 rounded-[2.5rem] blur-md opacity-30 {cfg["accent"]}"></div>
-                        <img src="{github_data.get("avatar_url")}" class="relative w-36 h-36 rounded-[2.2rem] border-2 {cfg["border"]} shadow-2xl object-cover ring-4 ring-white/10">
+            <!-- ================= MOBILE VIEW ================= -->
+            <div class="md:hidden flex flex-col p-6">
+                <!-- Mobile Header -->
+                <div class="flex items-center gap-5 mb-6">
+                    <div class="relative">
+                        <div class="absolute -inset-2 rounded-[2rem] blur-md opacity-30 {cfg["accent"]}"></div>
+                        <img src="{github_data.get("avatar_url")}" class="relative w-24 h-24 rounded-[1.5rem] border-2 {cfg["border"]} shadow-2xl object-cover ring-2 ring-white/10">
                     </div>
-                    <h2 class="text-3xl font-extrabold leading-tight mb-2 tracking-tight">{github_data.get("name")}</h2>
-                    <p class="text-base font-semibold opacity-40 mb-6 italic">@{username}</p>
-                    <div class="flex flex-wrap justify-center gap-2.5">
-                        {skills_html}
+                    <div class="flex flex-col">
+                        <h2 class="text-2xl font-extrabold leading-tight tracking-tight">{github_data.get("name")}</h2>
+                        <p class="text-sm font-semibold opacity-40 italic">@{username}</p>
                     </div>
                 </div>
-                
-                <!-- Right: Stats and Content -->
-                <div class="w-full md:w-[70%] flex flex-col">
-                    <div class="flex-1">
-                        <div class="relative mb-8 pt-2">
-                            <span class="absolute -left-6 -top-2 text-5xl opacity-10 font-serif">"</span>
-                            <p class="text-[17px] font-medium leading-relaxed opacity-90 pr-6 text-balance">
-                                {analysis.get("developer_vibe")}
-                            </p>
+
+                <!-- Quote -->
+                <div class="relative mb-6 pt-2 pl-4">
+                    <span class="absolute left-0 -top-2 text-4xl opacity-10 font-serif">"</span>
+                    <p class="text-[15px] font-medium leading-relaxed opacity-90 text-balance">
+                        {analysis.get("developer_vibe")}
+                    </p>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="p-4 rounded-2xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-center shadow-sm text-center">
+                        <span class="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Repositories</span>
+                        <span class="text-3xl font-extrabold">{github_data.get("public_repos")}</span>
+                    </div>
+                    <div class="p-4 rounded-2xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-center shadow-sm text-center">
+                        <span class="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
+                        <span class="text-3xl font-extrabold">{github_data.get("followers")}</span>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="flex flex-wrap justify-center gap-2.5 mb-8">
+                    {skills_html}
+                </div>
+
+                <!-- Repositories -->
+                <div class="mb-6">
+                    <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em] text-center">{github_data.get("repos_type", "Signature Projects")}</h3>
+                    <div class="flex flex-col gap-3">
+                        {repos_html}
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="mt-auto pt-6 border-t {cfg["border"]} flex flex-col items-center text-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="flex gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.2s"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" style="animation-delay: 0.4s"></span>
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-5 mb-10">
-                            <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
-                                <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Repositories</span>
-                                <span class="text-4xl font-extrabold">{github_data.get("public_repos")}</span>
-                            </div>
-                            <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
-                                <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
-                                <span class="text-4xl font-extrabold">{github_data.get("followers")}</span>
-                            </div>
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID:<br/>{username.upper()}</span>
+                    </div>
+                    <span class="opacity-60 italic normal-case font-medium text-[11px] text-balance leading-relaxed px-4">{analysis.get("fun_fact", "")}</span>
+                    <span class="text-[11px] font-bold uppercase tracking-widest opacity-80 mt-2">Dev Card AI 2026</span>
+                    <span class="text-[7px] opacity-20 uppercase tracking-tighter">Rendered via GraphQL v4 • Pinned Priority Mode</span>
+                </div>
+            </div>
+
+            <!-- ================= DESKTOP VIEW ================= -->
+            <div class="hidden md:flex flex-col h-full w-full">
+                <div class="flex-1 flex p-10 gap-10">
+                    <!-- Left: Profile Info -->
+                    <div class="w-[30%] flex flex-col items-center text-center">
+                        <div class="relative mb-8">
+                            <div class="absolute -inset-2 rounded-[2.5rem] blur-md opacity-30 {cfg["accent"]}"></div>
+                            <img src="{github_data.get("avatar_url")}" class="relative w-36 h-36 rounded-[2.2rem] border-2 {cfg["border"]} shadow-2xl object-cover ring-4 ring-white/10">
+                        </div>
+                        <h2 class="text-3xl font-extrabold leading-tight mb-2 tracking-tight">{github_data.get("name")}</h2>
+                        <p class="text-base font-semibold opacity-40 mb-6 italic">@{username}</p>
+                        <div class="flex flex-wrap justify-center gap-2.5">
+                            {skills_html}
                         </div>
                     </div>
                     
-                    <div class="mt-auto">
-                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em] text-center md:text-left">{github_data.get("repos_type", "Signature Projects")}</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {repos_html}
+                    <!-- Right: Stats and Content -->
+                    <div class="w-[70%] flex flex-col">
+                        <div class="flex-1">
+                            <div class="relative mb-8 pt-2">
+                                <span class="absolute -left-6 -top-2 text-5xl opacity-10 font-serif">"</span>
+                                <p class="text-[17px] font-medium leading-relaxed opacity-90 pr-6 text-balance">
+                                    {analysis.get("developer_vibe")}
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-5 mb-10">
+                                <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
+                                    <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Repositories</span>
+                                    <span class="text-4xl font-extrabold">{github_data.get("public_repos")}</span>
+                                </div>
+                                <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
+                                    <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
+                                    <span class="text-4xl font-extrabold">{github_data.get("followers")}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">{github_data.get("repos_type", "Signature Projects")}</h3>
+                            <div class="flex gap-4">
+                                {repos_html}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="px-6 md:px-10 py-6 border-t {cfg["border"]} flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="flex gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.2s"></span>
-                        <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" style="animation-delay: 0.4s"></span>
+                
+                <!-- Footer -->
+                <div class="px-10 py-6 border-t {cfg["border"]} flex justify-between items-center bg-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="flex gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.2s"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" style="animation-delay: 0.4s"></span>
+                        </div>
+                        <span class="text-[11px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID: {username.upper()}</span>
                     </div>
-                    <span class="text-[11px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID: {username.upper()}</span>
-                </div>
-                <div class="flex flex-col items-end gap-1">
                     <div class="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
                         <span class="opacity-60 italic normal-case font-medium">{analysis.get("fun_fact", "")}</span>
                         <div class="h-4 w-px {cfg["border"]}"></div>

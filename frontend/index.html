@@ -245,17 +245,17 @@
                                 </div>
                             </div>
                         ) : cardUrl ? (
-                            <div className="w-full fade-in-up">
-                                <div className="p-1.5 rounded-[3.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden mb-10 relative group bg-gradient-to-br from-white/15 to-transparent backdrop-blur-3xl">
-                                    <div className="glass p-6 rounded-[3.2rem] overflow-hidden bg-black/40">
+                            <div className="w-full fade-in-up md:px-0">
+                                <div className="md:p-1.5 md:rounded-[3.5rem] md:shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden mb-10 relative group md:bg-gradient-to-br md:from-white/15 md:to-transparent md:backdrop-blur-3xl">
+                                    <div className="md:glass md:p-6 md:rounded-[3.2rem] overflow-hidden md:bg-black/40">
                                         <iframe 
                                             src={cardUrl} 
-                                            className="w-full h-[950px] md:h-[620px] border-none rounded-[2.5rem] bg-transparent overflow-hidden"
+                                            className="w-full h-[950px] md:h-[620px] border-none md:rounded-[2.5rem] bg-transparent overflow-hidden"
                                             title="Dev Card"
                                             scrolling="no"
                                         ></iframe>
                                     </div>
-                                    <div className="absolute inset-0 pointer-events-none border border-white/10 rounded-[3.5rem] transition-opacity group-hover:opacity-100"></div>
+                                    <div className="hidden md:block absolute inset-0 pointer-events-none border border-white/10 rounded-[3.5rem] transition-opacity group-hover:opacity-100"></div>
                                 </div>
                                 <div className="flex justify-center gap-6">
                                     <button 
