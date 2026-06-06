@@ -29,6 +29,13 @@ async def scrape_github(username: str) -> dict:
     async with httpx.AsyncClient(headers=headers, timeout=10.0) as client:
         # Fetch user profile
         user_resp = await client.get(f"https://api.github.com/users/{username}")
+        if user_resp.status_code in (401, 403) and github_token:
+            print(f"Warning: GitHub API returned status {user_resp.status_code} with token. Retrying without token...")
+            github_token = None
+            if "Authorization" in client.headers:
+                del client.headers["Authorization"]
+            user_resp = await client.get(f"https://api.github.com/users/{username}")
+
         if user_resp.status_code != 200:
             return {"error": f"Failed to fetch user {username}: {user_resp.status_code}"}
         user_data = user_resp.json()
@@ -84,6 +91,11 @@ async def scrape_github(username: str) -> dict:
                             repos_type = "Signature Projects"
                 else:
                     print(f"GraphQL Failed with status {gql_resp.status_code}: {gql_resp.text}")
+                    if gql_resp.status_code in (401, 403):
+                        print("Clearing token due to GraphQL authentication failure.")
+                        github_token = None
+                        if "Authorization" in client.headers:
+                            del client.headers["Authorization"]
             except Exception as e:
                 print(f"GraphQL Exception: {e}")
         else:
