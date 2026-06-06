@@ -309,13 +309,25 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                     </div>
                     <div class="p-4 rounded-2xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-center shadow-sm text-center">
                         <span class="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
-                        <span class="text-3xl font-extrabold">{github_data.get("followers")}</span>
+                        <span id="mobile-followers-count" class="text-3xl font-extrabold transition-all duration-300">{github_data.get("followers")}</span>
                     </div>
                 </div>
 
                 <!-- Skills -->
-                <div class="flex flex-wrap justify-center gap-2.5 mb-8">
+                <div class="flex flex-wrap justify-center gap-2.5 mb-6">
                     {skills_html}
+                </div>
+
+                <!-- Profile Actions -->
+                <div class="flex gap-3 mb-8 px-4 justify-center w-full">
+                    <button onclick="handleFollow()" id="mobile-follow-btn" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer {cfg['accent']} {cfg['border']}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                        <span id="mobile-follow-text">Follow</span>
+                    </button>
+                    <a href="https://github.com/{username}" target="_blank" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {cfg['accent']} {cfg['border']} opacity-80 hover:opacity-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        <span>GitHub</span>
+                    </a>
                 </div>
 
                 <!-- Repositories -->
@@ -353,8 +365,19 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                         </div>
                         <h2 class="text-3xl font-extrabold leading-tight mb-2 tracking-tight">{github_data.get("name")}</h2>
                         <p class="text-base font-semibold opacity-40 mb-6 italic">@{username}</p>
-                        <div class="flex flex-wrap justify-center gap-2.5">
+                        <div class="flex flex-wrap justify-center gap-2.5 mb-6">
                             {skills_html}
+                        </div>
+                        <!-- Profile Actions -->
+                        <div class="flex w-full gap-3 px-2">
+                            <button onclick="handleFollow()" id="desktop-follow-btn" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer {cfg['accent']} {cfg['border']}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                                <span id="desktop-follow-text">Follow</span>
+                            </button>
+                            <a href="https://github.com/{username}" target="_blank" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {cfg['accent']} {cfg['border']} opacity-80 hover:opacity-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                <span>GitHub</span>
+                            </a>
                         </div>
                     </div>
                     
@@ -375,7 +398,7 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                                 </div>
                                 <div class="p-5 rounded-3xl {cfg["stat_bg"]} border {cfg["border"]} flex flex-col items-start shadow-sm">
                                     <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
-                                    <span class="text-4xl font-extrabold">{github_data.get("followers")}</span>
+                                    <span id="desktop-followers-count" class="text-4xl font-extrabold transition-all duration-300">{github_data.get("followers")}</span>
                                 </div>
                             </div>
                         </div>
@@ -408,6 +431,51 @@ async def generate_card_html(username: str, github_data: dict, analysis: dict) -
                 </div>
             </div>
         </div>
+        <script>
+            let followed = false;
+            const originalCount = {github_data.get("followers")};
+            
+            function handleFollow() {{
+                if (followed) return;
+                followed = true;
+                
+                // Update Follower Counts
+                const mobileCountEl = document.getElementById("mobile-followers-count");
+                const desktopCountEl = document.getElementById("desktop-followers-count");
+                if (mobileCountEl) {{
+                    mobileCountEl.textContent = originalCount + 1;
+                    mobileCountEl.classList.add("scale-125", "text-green-500");
+                    setTimeout(() => mobileCountEl.classList.remove("scale-125"), 300);
+                }}
+                if (desktopCountEl) {{
+                    desktopCountEl.textContent = originalCount + 1;
+                    desktopCountEl.classList.add("scale-125", "text-green-500");
+                    setTimeout(() => desktopCountEl.classList.remove("scale-125"), 300);
+                }}
+                
+                // Update buttons to show Following state
+                const mobileText = document.getElementById("mobile-follow-text");
+                const desktopText = document.getElementById("desktop-follow-text");
+                if (mobileText) mobileText.textContent = "Following";
+                if (desktopText) desktopText.textContent = "Following";
+                
+                const mobileBtn = document.getElementById("mobile-follow-btn");
+                const desktopBtn = document.getElementById("desktop-follow-btn");
+                
+                const disabledClasses = ["opacity-60", "cursor-not-allowed"];
+                if (mobileBtn) {{
+                    mobileBtn.classList.add(...disabledClasses);
+                    mobileBtn.removeAttribute("onclick");
+                }}
+                if (desktopBtn) {{
+                    desktopBtn.classList.add(...disabledClasses);
+                    desktopBtn.removeAttribute("onclick");
+                }}
+                
+                // Open user's GitHub profile in a new tab to complete follow on GitHub
+                window.open("https://github.com/{username}", "_blank");
+            }}
+        </script>
     </body>
     </html>
     """
