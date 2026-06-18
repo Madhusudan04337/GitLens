@@ -29,6 +29,8 @@ app.add_middleware(
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 CARDS_DIR = os.path.join(STATIC_DIR, "cards")
 
@@ -37,10 +39,16 @@ os.makedirs(CARDS_DIR, exist_ok=True)
 # Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-@app.get("/")
-async def root():
-    """Default root endpoint."""
-    return {"message": "GitLens Backend API is running!", "docs": "/docs"}
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    """Serve the React frontend from the backend."""
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_path):
+        with open(index_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            # In a single-port setup, BACKEND_URL is empty (relative paths)
+            return content.replace("__BACKEND_URL__", "")
+    return "<h1>GitLens Backend API is running!</h1><p>Frontend file not found.</p>"
 
 # Initialize ADK Services and Runner
 session_service = InMemorySessionService()

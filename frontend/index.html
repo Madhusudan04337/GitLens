@@ -8,16 +8,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- Script Dependencies -->
+    <!-- Script Dependencies (React 18 Production) -->
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone@7.23.11/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background: #0d1117;
             overflow-x: hidden;
+            margin: 0;
+            color: #e2e8f0;
         }
 
         .bg-gradient-main {
@@ -35,15 +36,6 @@
             background: linear-gradient(to right, #60a5fa, #a855f7, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(2deg); }
         }
 
         .animate-glow {
@@ -80,184 +72,149 @@
                               linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 30px 30px;
         }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0d1117; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
     </style>
 </head>
-<body class="bg-gradient-main min-h-screen text-gray-200 selection:bg-blue-500/30">
-    <!-- Background elements -->
+<body class="bg-gradient-main min-h-screen selection:bg-blue-500/30">
     <div class="fixed inset-0 grid-overlay pointer-events-none"></div>
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
 
     <div id="root" class="relative z-10 flex items-center justify-center min-h-screen text-gray-500 font-mono text-sm">
-        Initializing Premium Experience...
+        <div id="loader-content">
+            Initializing Premium Experience...
+            <div id="debug-info" class="mt-4 text-[10px] opacity-40 text-center">Checking libraries...</div>
+        </div>
     </div>
 
-    <script type="text/babel">
-        // Backend configuration
-        window.BACKEND_URL = '__BACKEND_URL__';
-        
-        const { useState, useEffect } = React;
+    <script>
+        // Use pure JavaScript (no Babel/JSX) for maximum reliability
+        (function() {
+            const e = React.createElement;
+            window.BACKEND_URL = '__BACKEND_URL__';
 
-        const GithubIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-        );
+            // Verify libraries are loaded
+            const debugEl = document.getElementById('debug-info');
+            if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+                debugEl.innerHTML = '<span class="text-red-500">Error: React libraries failed to load from CDN.</span>';
+                return;
+            }
+            debugEl.innerText = "Libraries loaded. Starting application...";
 
-        const AlertIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        );
+            const App = () => {
+                const [username, setUsername] = React.useState('');
+                const [loading, setLoading] = React.useState(false);
+                const [cardUrl, setCardUrl] = React.useState(null);
+                const [error, setError] = React.useState(null);
+                const [toast, setToast] = React.useState(null);
 
-        const App = () => {
-            const [username, setUsername] = useState('');
-            const [loading, setLoading] = useState(false);
-            const [cardUrl, setCardUrl] = useState(null);
-            const [error, setError] = useState(null);
-            const [toast, setToast] = useState(null);
+                const handleGenerate = async (ev) => {
+                    if (ev) ev.preventDefault();
+                    if (!username.trim()) return;
 
-            const handleGenerate = async (e) => {
-                if (e) e.preventDefault();
-                if (!username.trim()) return;
+                    setLoading(true);
+                    setError(null);
+                    setCardUrl(null);
 
-                setLoading(true);
-                setError(null);
-                setCardUrl(null);
+                    try {
+                        const baseUrl = window.BACKEND_URL && !window.BACKEND_URL.includes('__BACKEND_URL') ? window.BACKEND_URL : '';
+                        const response = await fetch(`${baseUrl}/generate`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: username.trim() })
+                        });
 
-                try {
-                    const baseUrl = window.BACKEND_URL && window.BACKEND_URL !== ('__BACKEND_URL' + '__') ? window.BACKEND_URL : '';
-                    
-                    const response = await fetch(`${baseUrl}/generate`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: username.trim() })
-                    });
-
-                    const contentType = response.headers.get("content-type");
-                    if (!contentType || !contentType.includes("application/json")) {
-                        throw new Error('Server returned non-JSON response. Is the Backend URL correct?');
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.detail || 'Profile not found');
+                        
+                        let finalUrl = data.card_url;
+                        if (finalUrl.startsWith('/') && baseUrl) finalUrl = baseUrl + finalUrl;
+                        setCardUrl(finalUrl);
+                    } catch (err) {
+                        setError(err.message || 'API connection error.');
+                    } finally {
+                        setLoading(false);
                     }
+                };
 
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        throw new Error(data.detail || 'Profile not found');
-                    }
-                    
-                    let finalCardUrl = data.card_url;
-                    if (finalCardUrl.startsWith('/') && baseUrl) {
-                        finalCardUrl = baseUrl + finalCardUrl;
-                    }
-                    setCardUrl(finalCardUrl);
-                } catch (err) {
-                    console.error('Fetch Error:', err);
-                    setError(err.message || 'Oops! GitHub profile not found or API error.');
-                } finally {
-                    setLoading(false);
-                }
+                const copyLink = () => {
+                    const fullUrl = cardUrl.startsWith('http') ? cardUrl : window.location.origin + cardUrl;
+                    navigator.clipboard.writeText(fullUrl);
+                    setToast('Link copied!');
+                    setTimeout(() => setToast(null), 3000);
+                };
+
+                // Icons
+                const GithubIcon = e('svg', { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, className: "text-gray-500" }, 
+                    e('path', { d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" }),
+                    e('path', { d: "M9 18c-4.51 2-5-2-7-2" })
+                );
+
+                const AlertIcon = e('svg', { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, className: "mr-2" }, 
+                    e('circle', { cx: 12, cy: 12, r: 10 }),
+                    e('line', { x1: 12, y1: 8, x2: 12, y2: 12 }),
+                    e('line', { x1: 12, y1: 16, x2: 12.01, y2: 16 })
+                );
+
+                return e('main', { className: "relative z-10 flex flex-col items-center justify-center min-h-screen p-6" },
+                    // Hero
+                    e('div', { className: "text-center mt-16 mb-12 fade-in-up" },
+                        e('h1', { className: "text-4xl md:text-6xl font-extrabold mb-4 tracking-tight text-white" }, 
+                            "GitHub ", e('span', { className: "text-gradient" }, "Dev Card"), " Generator"
+                        ),
+                        e('p', { className: "text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-light" }, 
+                            "Transform your GitHub presence into a premium, shareable identity card powered by AI."
+                        )
+                    ),
+                    // Search
+                    e('div', { className: "w-full max-w-[720px] mb-12 fade-in-up" },
+                        e('form', { onSubmit: handleGenerate, className: "glass p-2 rounded-2xl flex flex-col md:flex-row gap-3 animate-glow" },
+                            e('div', { className: "relative flex-grow group flex items-center" },
+                                e('div', { className: "absolute left-4" }, GithubIcon),
+                                e('input', { 
+                                    type: "text", 
+                                    placeholder: "Enter GitHub username",
+                                    className: "w-full bg-transparent border-none py-4 pl-12 pr-4 text-white focus:outline-none text-lg",
+                                    value: username,
+                                    onChange: (el) => setUsername(el.target.value),
+                                    disabled: loading
+                                })
+                            ),
+                            e('button', {
+                                type: "submit",
+                                disabled: loading || !username,
+                                className: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-4 px-8 rounded-xl transition-all disabled:opacity-50"
+                            }, loading ? "Generating..." : "Generate Card")
+                        )
+                    ),
+                    // Error
+                    error && e('div', { className: "w-full max-w-md p-4 mb-12 glass border-red-500/30 text-red-400 rounded-xl text-center fade-in-up flex items-center justify-center" }, 
+                        AlertIcon, e('span', null, error)
+                    ),
+                    // Showcase
+                    e('section', { className: "w-full max-w-[960px] min-h-[500px] flex items-center justify-center relative" },
+                        loading ? e('div', { className: "w-full h-[450px] glass rounded-[3rem] shimmer" }) :
+                        cardUrl ? e('div', { className: "w-full fade-in-up" },
+                            e('div', { className: "md:p-1.5 md:rounded-[3.5rem] overflow-hidden mb-10 relative md:glass md:bg-black/40" },
+                                e('iframe', { src: cardUrl, className: "w-full h-[620px] border-none md:rounded-[2.5rem] bg-transparent" })
+                            ),
+                            e('div', { className: "flex justify-center" },
+                                e('button', { onClick: copyLink, className: "glass hover:bg-white/10 text-white font-bold py-4 px-10 rounded-2xl transition-all" }, "Copy Link")
+                            )
+                        ) : e('div', { className: "text-gray-600 italic text-center opacity-50" }, "Your premium identity is just one username away.")
+                    ),
+                    // Toast
+                    toast && e('div', { className: "fixed bottom-8 left-1/2 -translate-x-1/2 glass px-6 py-3 rounded-full text-white text-sm font-medium fade-in-up" }, toast)
+                );
             };
 
-            const copyToClipboard = () => {
-                const fullUrl = cardUrl.startsWith('http') ? cardUrl : window.location.origin + cardUrl;
-                navigator.clipboard.writeText(fullUrl);
-                setToast('Link copied to clipboard!');
-                setTimeout(() => setToast(null), 3000);
-            };
-
-            return (
-                <main className="relative z-10 flex flex-col items-center justify-center min-h-screen p-6">
-                    {/* Hero Section */}
-                    <div className="text-center mt-16 mb-12 fade-in-up">
-                        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight">
-                            GitHub <span className="text-gradient">Dev Card</span> Generator
-                        </h1>
-                        <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-light">
-                            Transform your GitHub presence into a premium, shareable identity card powered by AI.
-                        </p>
-                    </div>
-
-                    {/* Search Container */}
-                    <div className="w-full max-w-[720px] mb-12 fade-in-up">
-                        <form onSubmit={handleGenerate} className="glass p-2 rounded-2xl flex flex-col md:flex-row gap-3 animate-glow">
-                            <div className="relative flex-grow group">
-                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-500">
-                                    <GithubIcon />
-                                </div>
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter GitHub username" 
-                                    className="w-full bg-transparent border-none py-4 pl-12 pr-4 text-white focus:ring-0 text-lg"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    disabled={loading}
-                                />
-                            </div>
-                            <button 
-                                type="submit"
-                                disabled={loading || !username}
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-4 px-8 rounded-xl transition-all disabled:opacity-50"
-                            >
-                                {loading ? "Generating..." : "Generate Card"}
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Error State */}
-                    {error && (
-                        <div className="w-full max-w-md p-4 mb-12 glass border-red-500/30 text-red-400 rounded-xl text-center fade-in-up">
-                            <div className="flex items-center justify-center gap-2">
-                                <AlertIcon />
-                                <span>{error}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Content Showcase */}
-                    <section className="w-full max-w-[960px] min-h-[500px] flex items-center justify-center relative">
-                        {loading ? (
-                            <div className="w-full space-y-4 fade-in-up">
-                                <div className="w-full h-[450px] glass rounded-[3rem] shimmer"></div>
-                            </div>
-                        ) : cardUrl ? (
-                            <div className="w-full fade-in-up md:px-0">
-                                <div className="md:p-1.5 md:rounded-[3.5rem] overflow-hidden mb-10 relative md:glass md:bg-black/40">
-                                    <iframe 
-                                        src={cardUrl} 
-                                        className="w-full h-[620px] border-none md:rounded-[2.5rem] bg-transparent"
-                                        title="Dev Card"
-                                    ></iframe>
-                                </div>
-                                <div className="flex justify-center gap-6">
-                                    <button 
-                                        onClick={copyToClipboard}
-                                        className="glass hover:bg-white/10 text-white font-bold py-4 px-10 rounded-2xl transition-all"
-                                    >
-                                        Copy Link
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-gray-600 italic text-center opacity-50">
-                                <p>Your premium identity is just one username away.</p>
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Toast Notification */}
-                    {toast && (
-                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-6 py-3 rounded-full text-white text-sm font-medium fade-in-up">
-                            {toast}
-                        </div>
-                    )}
-                </main>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+            try {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(e(App));
+            } catch (err) {
+                console.error("Mount error:", err);
+                debugEl.innerHTML = '<span class="text-red-500">Failed to render app. Check console.</span>';
+            }
+        })();
     </script>
 </body>
 </html>
