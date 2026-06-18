@@ -10,15 +10,15 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
 -   **Smart Repository Selection:** Automatically prioritizes your **Pinned Repositories** using the GitHub GraphQL API, falling back to recent repositories if none are pinned.
 -   **Premium Themes:** Five distinct visual identities (Hacker, Builder, Researcher, Designer, Open Source Hero) that adapt to your profile data.
 -   **High-Fidelity Responsive Design:** Ultra-premium landscape layout for desktop (840x480px) and a seamless, edge-to-edge stacked layout for mobile. Features glassmorphism, fluid typography, and interactive hover states.
--   **Shareable Identity:** Generates unique verification IDs and standalone HTML cards perfect for embedding in your portfolio or sharing on social media.
+-   **Single-Port Deployment:** Simplified architecture where the backend (FastAPI) serves the frontend (React) directly on a single port for maximum reliability.
 
 ## 🚀 Tech Stack
 
 -   **Orchestration:** [Google ADK](https://github.com/google/adk)
--   **LLM:** [Gemini 2.0 Flash](https://aistudio.google.com/)
+-   **LLM:** [Gemini 1.5 Flash](https://aistudio.google.com/)
 -   **Tooling:** [MCP (FastMCP)](https://modelcontextprotocol.io/)
 -   **Backend:** FastAPI (Python 3.11+)
--   **Frontend:** React (Tailwind CSS, Glassmorphism)
+-   **Frontend:** React (Standard JS, Tailwind CSS, Glassmorphism)
 -   **APIs:** GitHub REST v3 & GraphQL v4
 -   **Dependency Management:** `uv` (preferred)
 
@@ -27,11 +27,11 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
 ### Prerequisites
 
 -   Python 3.11+
--   [uv](https://github.com/astral-sh/uv) installed
--   A Gemini API Key
+-   [uv](https://github.com/astral-sh/uv) installed (or `pip`)
+-   A Gemini API Key (Get one at [Google AI Studio](https://aistudio.google.com/))
 -   A GitHub Personal Access Token (for Pinned Repositories & GraphQL access)
 
-### Installation
+### Installation & Running
 
 1.  **Clone the repository:**
     ```bash
@@ -46,29 +46,41 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
     GITHUB_TOKEN=your_github_pat
     ```
 
-3.  **Run with Docker (Recommended):**
+3.  **Setup & Run (Using `uv` - Recommended):**
     ```bash
-    docker compose up --build
-    ```
-    -   Frontend: `http://localhost:80`
-    -   Backend: `http://localhost:8080`
-
-4.  **Run Locally (Development):**
-    ```bash
-    # Install dependencies
+    # Create venv and install dependencies
+    uv venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
     uv pip install -r backend/requirements.txt
 
-    # Start the backend
-    cd backend
-    python main.py
+    # Start the application
+    python backend/main.py
     ```
 
-## 🌐 Live Deployment
+4.  **Setup & Run (Using `pip`):**
+    ```bash
+    # Install dependencies
+    pip install -r backend/requirements.txt
 
-The project is currently deployed on Google Cloud Run and can be accessed via the following public URLs:
+    # Start the application
+    python backend/main.py
+    ```
 
-- **Frontend:** [https://github-card-frontend-719852595489.us-central1.run.app](https://github-card-frontend-719852595489.us-central1.run.app)
-- **Backend API:** [https://github-card-backend-719852595489.us-central1.run.app](https://github-card-backend-719852595489.us-central1.run.app)
+5.  **Access the application:**
+    Open your browser and navigate to:
+    **[http://localhost:8080](http://localhost:8080)**
+
+## 🧪 Running Tests
+
+GitLens includes a comprehensive unit testing suite using `pytest`.
+
+```bash
+# Set PYTHONPATH to the backend directory
+export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
+
+# Run all tests
+pytest backend/tests/ -v
+```
 
 ## 🎨 Card Themes
 
@@ -77,14 +89,6 @@ The project is currently deployed on Google Cloud Run and can be accessed via th
 -   **Designer:** Purple gradients and playful layouts for creative devs.
 -   **Researcher:** Minimalist, data-focused structure with high readability.
 -   **Open Source Hero:** Warm, amber-toned identity for community champions.
-
-## 📝 Workflow Mandates
-
-Every generation task follows a strict pipeline:
-1.  **Scrape:** Fetches profile data + GraphQL Pinned Repos.
-2.  **Analyze:** Gemini processes data for "Vibe" and "Theme".
-3.  **Generate:** Crafts the premium HTML/CSS structure.
-4.  **Save:** Persists the card to `/static/cards/{username}.html`.
 
 ## 🤝 Contributing
 
