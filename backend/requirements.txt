@@ -8,3 +8,6 @@ pydantic
 python-dotenv
 httpx
 jinja2
+pytest
+pytest-asyncio
+pytest-mock
