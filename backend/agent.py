@@ -38,9 +38,3 @@ github_card_agent = adk.Agent(
         )
     ]
 )
-
-# Keep for backward compatibility or simple testing
-async def run_agent(prompt: str):
-    """Run the agent with a given prompt."""
-    response = await github_card_agent.run(prompt)
-    return response
