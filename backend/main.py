@@ -29,12 +29,6 @@ app.add_middleware(
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Try sibling directory (local dev)
-FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
-
-# Fallback to sub-directory (if copied inside backend dir or app root)
-if not os.path.exists(os.path.join(FRONTEND_DIR, "index.html")):
-    FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 CARDS_DIR = os.path.join(STATIC_DIR, "cards")
 
@@ -43,17 +37,10 @@ os.makedirs(CARDS_DIR, exist_ok=True)
 # Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-@app.get("/", response_class=HTMLResponse)
-async def serve_frontend():
-    """Serve the React frontend from the backend if available, otherwise show a default message."""
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    if os.path.exists(index_path):
-        with open(index_path, "r", encoding="utf-8") as f:
-            content = f.read()
-            # Replace placeholder if BACKEND_URL is set in environment
-            backend_url = os.environ.get("BACKEND_URL", "")
-            return content.replace("__BACKEND_URL__", backend_url)
-    return "<h1>GitLens Backend API is running!</h1><p>Please use the separate Frontend service URL to view the application.</p>"
+@app.get("/")
+async def root():
+    """Default root endpoint."""
+    return {"message": "GitLens Backend API is running!", "docs": "/docs"}
 
 # Initialize ADK Services and Runner
 session_service = InMemorySessionService()

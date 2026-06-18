@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+            background-color: transparent;
+        }
+        .card-glass { 
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+        }
+        .text-balance { text-wrap: balance; }
+    </style>
+</head>
+<body class="p-0 md:p-10 {{ cfg.text }}">
+    <div class="w-full max-w-[840px] h-auto min-h-[540px] relative overflow-hidden rounded-none md:rounded-[3rem] border-0 md:border-2 {{ cfg.border }} {{ cfg.glow }} flex flex-col {{ cfg.card }} md:card-glass">
+        <!-- Decorative background elements -->
+        <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 {{ cfg.accent }}"></div>
+        <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full blur-[100px] opacity-15 {{ cfg.accent }}"></div>
+        
+        <!-- ================= MOBILE VIEW ================= -->
+        <div class="md:hidden flex flex-col p-6">
+            <!-- Mobile Header -->
+            <div class="flex items-center gap-5 mb-6">
+                <div class="relative">
+                    <div class="absolute -inset-2 rounded-[2rem] blur-md opacity-30 {{ cfg.accent }}"></div>
+                    <img src="{{ github_data.avatar_url }}" class="relative w-24 h-24 rounded-[1.5rem] border-2 {{ cfg.border }} shadow-2xl object-cover ring-2 ring-white/10">
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-2xl font-extrabold leading-tight tracking-tight">{{ github_data.name }}</h2>
+                    <p class="text-sm font-semibold opacity-40 italic">@{{ username }}</p>
+                </div>
+            </div>
+
+            <!-- Quote -->
+            <div class="relative mb-6 pt-2 pl-4">
+                <span class="absolute left-0 -top-2 text-4xl opacity-10 font-serif">"</span>
+                <p class="text-[15px] font-medium leading-relaxed opacity-90 text-balance">
+                    {{ analysis.developer_vibe }}
+                </p>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="p-4 rounded-2xl {{ cfg.stat_bg }} border {{ cfg.border }} flex flex-col items-center shadow-sm text-center">
+                    <span class="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Repositories</span>
+                    <span class="text-3xl font-extrabold">{{ github_data.public_repos }}</span>
+                </div>
+                <div class="p-4 rounded-2xl {{ cfg.stat_bg }} border {{ cfg.border }} flex flex-col items-center shadow-sm text-center">
+                    <span class="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
+                    <span id="mobile-followers-count" class="text-3xl font-extrabold transition-all duration-300">{{ github_data.followers }}</span>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="flex flex-wrap justify-center gap-2.5 mb-6">
+                {% for skill in analysis.top_skills[:4] %}
+                <span class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ cfg.accent }} border {{ cfg.border }}">{{ skill }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Profile Actions -->
+            <div class="flex gap-3 mb-8 px-4 justify-center w-full">
+                <button onclick="handleFollow()" id="mobile-follow-btn" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer {{ cfg.accent }} {{ cfg.border }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    <span id="mobile-follow-text">Follow</span>
+                </button>
+                <a href="https://github.com/{{ username }}" target="_blank" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {{ cfg.accent }} {{ cfg.border }} opacity-80 hover:opacity-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    <span>GitHub</span>
+                </a>
+            </div>
+
+            <!-- Repositories -->
+            <div class="mb-6">
+                <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em] text-center">{{ github_data.repos_type or "Signature Projects" }}</h3>
+                <div class="flex flex-col gap-3">
+                    {% for repo in github_data.top_repos[:3] %}
+                    <div class="flex-1 min-w-0 p-4 border rounded-2xl {{ cfg.border }} {{ cfg.card }} hover:translate-y-[-4px] transition-all duration-300">
+                        <h4 class="font-bold text-[13px] truncate mb-1">{{ repo.name }}</h4>
+                        <p class="text-[11px] {{ cfg.secondary }} line-clamp-2 mb-3 h-8 leading-snug">{{ repo.description or "No description provided." }}</p>
+                        <div class="flex justify-between items-center text-[11px] font-bold">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                {{ repo.stars }}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md {{ cfg.accent }} border {{ cfg.border }} text-[9px] uppercase">{{ repo.language or "Code" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-auto pt-6 border-t {{ cfg.border }} flex flex-col items-center text-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.2s"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" style="animation-delay: 0.4s"></span>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID:<br/>{{ username.upper() }}</span>
+                </div>
+                <span class="opacity-60 italic normal-case font-medium text-[11px] text-balance leading-relaxed px-4">{{ analysis.fun_fact }}</span>
+                <span class="text-[11px] font-bold uppercase tracking-widest opacity-80 mt-2">Dev Card AI 2026</span>
+                <span class="text-[7px] opacity-20 uppercase tracking-tighter">Rendered via GraphQL v4 • Pinned Priority Mode</span>
+            </div>
+        </div>
+
+        <!-- ================= DESKTOP VIEW ================= -->
+        <div class="hidden md:flex flex-col h-full w-full">
+            <div class="flex-1 flex p-10 gap-10">
+                <!-- Left: Profile Info -->
+                <div class="w-[30%] flex flex-col items-center text-center">
+                    <div class="relative mb-8">
+                        <div class="absolute -inset-2 rounded-[2.5rem] blur-md opacity-30 {{ cfg.accent }}"></div>
+                        <img src="{{ github_data.avatar_url }}" class="relative w-36 h-36 rounded-[2.2rem] border-2 {{ cfg.border }} shadow-2xl object-cover ring-4 ring-white/10">
+                    </div>
+                    <h2 class="text-3xl font-extrabold leading-tight mb-2 tracking-tight">{{ github_data.name }}</h2>
+                    <p class="text-base font-semibold opacity-40 mb-6 italic">@{{ username }}</p>
+                    <div class="flex flex-wrap justify-center gap-2.5 mb-6">
+                        {% for skill in analysis.top_skills[:4] %}
+                        <span class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ cfg.accent }} border {{ cfg.border }}">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    <!-- Profile Actions -->
+                    <div class="flex w-full gap-3 px-2">
+                        <button onclick="handleFollow()" id="desktop-follow-btn" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer {{ cfg.accent }} {{ cfg.border }}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                            <span id="desktop-follow-text">Follow</span>
+                        </button>
+                        <a href="https://github.com/{{ username }}" target="_blank" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {{ cfg.accent }} {{ cfg.border }} opacity-80 hover:opacity-100">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            <span>GitHub</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Right: Stats and Content -->
+                <div class="w-[70%] flex flex-col">
+                    <div class="flex-1">
+                        <div class="relative mb-8 pt-2">
+                            <span class="absolute -left-6 -top-2 text-5xl opacity-10 font-serif">"</span>
+                            <p class="text-[17px] font-medium leading-relaxed opacity-90 pr-6 text-balance">
+                                {{ analysis.developer_vibe }}
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-5 mb-10">
+                            <div class="p-5 rounded-3xl {{ cfg.stat_bg }} border {{ cfg.border }} flex flex-col items-start shadow-sm">
+                                <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Repositories</span>
+                                <span class="text-4xl font-extrabold">{{ github_data.public_repos }}</span>
+                            </div>
+                            <div class="p-5 rounded-3xl {{ cfg.stat_bg }} border {{ cfg.border }} flex flex-col items-start shadow-sm">
+                                <span class="text-[12px] uppercase font-bold opacity-40 tracking-[0.2em] mb-1">Followers</span>
+                                <span id="desktop-followers-count" class="text-4xl font-extrabold transition-all duration-300">{{ github_data.followers }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">{{ github_data.repos_type or "Signature Projects" }}</h3>
+                        <div class="flex gap-4">
+                            {% for repo in github_data.top_repos[:3] %}
+                            <div class="flex-1 min-w-0 p-4 border rounded-2xl {{ cfg.border }} {{ cfg.card }} hover:translate-y-[-4px] transition-all duration-300">
+                                <h4 class="font-bold text-[13px] truncate mb-1">{{ repo.name }}</h4>
+                                <p class="text-[11px] {{ cfg.secondary }} line-clamp-2 mb-3 h-8 leading-snug">{{ repo.description or "No description provided." }}</p>
+                                <div class="flex justify-between items-center text-[11px] font-bold">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                        {{ repo.stars }}
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded-md {{ cfg.accent }} border {{ cfg.border }} text-[9px] uppercase">{{ repo.language or "Code" }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="px-10 py-6 border-t {{ cfg.border }} flex justify-between items-center bg-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="flex gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.2s"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" style="animation-delay: 0.4s"></span>
+                    </div>
+                    <span class="text-[11px] font-black uppercase tracking-[0.2em] opacity-40">Verification ID: {{ username.upper() }}</span>
+                </div>
+                <div class="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
+                    <span class="opacity-60 italic normal-case font-medium">{{ analysis.fun_fact }}</span>
+                    <div class="h-4 w-px {{ cfg.border }}"></div>
+                    <span class="opacity-80">Dev Card AI 2026</span>
+                </div>
+                <span class="text-[8px] opacity-20 uppercase tracking-tighter">Rendered via GraphQL v4 • Pinned Priority Mode</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        let followed = false;
+        const originalCount = {{ github_data.followers }};
+        
+        function handleFollow() {
+            if (followed) return;
+            followed = true;
+            
+            // Update Follower Counts
+            const mobileCountEl = document.getElementById("mobile-followers-count");
+            const desktopCountEl = document.getElementById("desktop-followers-count");
+            if (mobileCountEl) {
+                mobileCountEl.textContent = originalCount + 1;
+                mobileCountEl.classList.add("scale-125", "text-green-500");
+                setTimeout(() => mobileCountEl.classList.remove("scale-125"), 300);
+            }
+            if (desktopCountEl) {
+                desktopCountEl.textContent = originalCount + 1;
+                desktopCountEl.classList.add("scale-125", "text-green-500");
+                setTimeout(() => desktopCountEl.classList.remove("scale-125"), 300);
+            }
+            
+            // Update buttons to show Following state
+            const mobileText = document.getElementById("mobile-follow-text");
+            const desktopText = document.getElementById("desktop-follow-text");
+            if (mobileText) mobileText.textContent = "Following";
+            if (desktopText) desktopText.textContent = "Following";
+            
+            const mobileBtn = document.getElementById("mobile-follow-btn");
+            const desktopBtn = document.getElementById("desktop-follow-btn");
+            
+            const disabledClasses = ["opacity-60", "cursor-not-allowed"];
+            if (mobileBtn) {
+                mobileBtn.classList.add(...disabledClasses);
+                mobileBtn.removeAttribute("onclick");
+            }
+            if (desktopBtn) {
+                desktopBtn.classList.add(...disabledClasses);
+                desktopBtn.removeAttribute("onclick");
+            }
+            
+            // Open user's GitHub profile in a new tab to complete follow on GitHub
+            window.open("https://github.com/{{ username }}", "_blank");
+        }
+    </script>
+</body>
+</html>
