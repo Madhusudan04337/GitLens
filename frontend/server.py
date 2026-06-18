@@ -1,9 +1,14 @@
 import os
 import http.server
 import socketserver
-import io
+from pathlib import Path
+from dotenv import load_dotenv
 
-PORT = 80
+# Find .env in project root
+project_root = Path(__file__).parent.parent.absolute()
+load_dotenv(project_root / ".env")
+
+PORT = 3000
 BACKEND_URL = os.environ.get("BACKEND_URL", "")
 
 # Load the template once

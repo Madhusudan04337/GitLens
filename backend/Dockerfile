@@ -8,7 +8,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN uv pip install --system -r requirements.txt
 
+# Copy backend code
 COPY . .
+
+# Copy frontend code so backend can serve it
+COPY ../frontend /app/frontend
 
 EXPOSE 8080
 
