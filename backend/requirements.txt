@@ -1,6 +1,7 @@
 fastapi
 uvicorn
-mcp[fastmcp]
+mcp>=1.0.0,<2.0.0
+fastmcp
 google-adk
 google-genai
 google-generativeai
