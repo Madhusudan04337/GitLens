@@ -46,29 +46,31 @@ GitLens is a premium developer identity platform that transforms your GitHub pre
     GITHUB_TOKEN=your_github_pat
     ```
 
-3.  **Setup & Run (Using `uv` - Recommended):**
-    ```bash
-    # Create venv and install dependencies
-    uv venv
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    uv pip install -r backend/requirements.txt
-
-    # Start the application
-    python backend/main.py
-    ```
-
-4.  **Setup & Run (Using `pip`):**
+3.  **Setup & Run (Unified App - Recommended):**
     ```bash
     # Install dependencies
     pip install -r backend/requirements.txt
 
-    # Start the application
+    # Option A: Start using Uvicorn with auto-reload
+    uvicorn backend.main:app --host 0.0.0.0 --port 8080 --reload
+
+    # Option B: Start directly with Python
     python backend/main.py
     ```
 
+4.  **Setup & Run (Separate Frontend Server - Optional):**
+    If running backend and frontend independently:
+    ```bash
+    # Terminal 1: Backend (Port 8080)
+    python backend/main.py
+
+    # Terminal 2: Frontend (Port 3000)
+    python frontend/server.py
+    ```
+
 5.  **Access the application:**
-    Open your browser and navigate to:
-    **[http://localhost:8080](http://localhost:8080)**
+    - Unified setup (Recommended): **[http://localhost:8080](http://localhost:8080)**
+    - Separate Frontend server: **[http://localhost:3000](http://localhost:3000)**
 
 ## 🧪 Running Tests
 

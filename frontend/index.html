@@ -200,7 +200,7 @@
                         loading ? e('div', { className: "w-full h-[450px] glass rounded-[3rem] shimmer" }) :
                         cardUrl ? e('div', { className: "w-full fade-in-up" },
                             e('div', { className: "md:p-1.5 md:rounded-[3.5rem] overflow-hidden mb-10 relative md:glass md:bg-black/40" },
-                                e('iframe', { src: cardUrl, className: "w-full h-[620px] border-none md:rounded-[2.5rem] bg-transparent" })
+                                e('iframe', { src: cardUrl, className: "w-full h-[620px] border-none md:rounded-[2.5rem] bg-transparent", scrolling: "no" })
                             ),
                             e('div', { className: "flex justify-center" },
                                 e('button', { onClick: copyLink, className: "glass hover:bg-white/10 text-white font-bold py-4 px-10 rounded-2xl transition-all" }, "Copy Link")
