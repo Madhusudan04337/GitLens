@@ -68,21 +68,17 @@
             </div>
 
             <!-- Skills -->
-            <div class="flex flex-wrap justify-center gap-2.5 mb-6">
-                {% for skill in analysis.top_skills[:4] %}
-                <span class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ cfg.accent }} border {{ cfg.border }}">{{ skill }}</span>
+            <div class="flex flex-wrap justify-center gap-2 mb-8 px-2">
+                {% for skill in analysis.top_skills %}
+                <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider {{ cfg.accent }} border {{ cfg.border }}">{{ skill }}</span>
                 {% endfor %}
             </div>
-
+            
             <!-- Profile Actions -->
             <div class="flex gap-3 mb-8 px-4 justify-center w-full">
-                <button onclick="handleFollow()" id="mobile-follow-btn" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer {{ cfg.accent }} {{ cfg.border }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                    <span id="mobile-follow-text">Follow</span>
-                </button>
-                <a href="https://github.com/{{ username }}" target="_blank" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {{ cfg.accent }} {{ cfg.border }} opacity-80 hover:opacity-100">
+                <a href="https://github.com/{{ username }}" target="_blank" class="w-full py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {{ cfg.accent }} {{ cfg.border }} opacity-80 hover:opacity-100">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    <span>GitHub</span>
+                    <span>View GitHub Profile</span>
                 </a>
             </div>
 
@@ -91,7 +87,7 @@
                 <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em] text-center">{{ github_data.repos_type or "Signature Projects" }}</h3>
                 <div class="flex flex-col gap-3">
                     {% for repo in github_data.top_repos[:3] %}
-                    <div class="flex-1 min-w-0 p-4 border rounded-2xl {{ cfg.border }} {{ cfg.card }} hover:translate-y-[-4px] transition-all duration-300">
+                    <a href="https://github.com/{{ username }}/{{ repo.name }}" target="_blank" class="flex-1 min-w-0 p-4 border rounded-2xl {{ cfg.border }} {{ cfg.card }} hover:translate-y-[-4px] transition-all duration-300 block text-left">
                         <h4 class="font-bold text-[13px] truncate mb-1">{{ repo.name }}</h4>
                         <p class="text-[11px] {{ cfg.secondary }} line-clamp-2 mb-3 h-8 leading-snug">{{ repo.description or "No description provided." }}</p>
                         <div class="flex justify-between items-center text-[11px] font-bold">
@@ -101,7 +97,7 @@
                             </span>
                             <span class="px-2 py-0.5 rounded-md {{ cfg.accent }} border {{ cfg.border }} text-[9px] uppercase">{{ repo.language or "Code" }}</span>
                         </div>
-                    </div>
+                    </a>
                     {% endfor %}
                 </div>
             </div>
@@ -133,20 +129,17 @@
                     </div>
                     <h2 class="text-3xl font-extrabold leading-tight mb-2 tracking-tight">{{ github_data.name }}</h2>
                     <p class="text-base font-semibold opacity-40 mb-6 italic">@{{ username }}</p>
-                    <div class="flex flex-wrap justify-center gap-2.5 mb-6">
-                        {% for skill in analysis.top_skills[:4] %}
-                        <span class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider {{ cfg.accent }} border {{ cfg.border }}">{{ skill }}</span>
+                    <!-- Skills -->
+                    <div class="flex flex-wrap justify-center gap-2 mb-6 w-full">
+                        {% for skill in analysis.top_skills %}
+                        <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider {{ cfg.accent }} border {{ cfg.border }}">{{ skill }}</span>
                         {% endfor %}
                     </div>
                     <!-- Profile Actions -->
-                    <div class="flex w-full gap-3 px-2">
-                        <button onclick="handleFollow()" id="desktop-follow-btn" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer {{ cfg.accent }} {{ cfg.border }}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                            <span id="desktop-follow-text">Follow</span>
-                        </button>
-                        <a href="https://github.com/{{ username }}" target="_blank" class="flex-1 py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {{ cfg.accent }} {{ cfg.border }} opacity-80 hover:opacity-100">
+                    <div class="flex w-full gap-3 px-2 mt-auto">
+                        <a href="https://github.com/{{ username }}" target="_blank" class="w-full py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] {{ cfg.accent }} {{ cfg.border }} opacity-80 hover:opacity-100">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                            <span>GitHub</span>
+                            <span>GitHub Profile</span>
                         </a>
                     </div>
                 </div>
@@ -177,7 +170,7 @@
                         <h3 class="text-[11px] font-black uppercase mb-4 opacity-30 tracking-[0.4em]">{{ github_data.repos_type or "Signature Projects" }}</h3>
                         <div class="flex gap-4">
                             {% for repo in github_data.top_repos[:3] %}
-                            <div class="flex-1 min-w-0 p-4 border rounded-2xl {{ cfg.border }} {{ cfg.card }} hover:translate-y-[-4px] transition-all duration-300">
+                            <a href="https://github.com/{{ username }}/{{ repo.name }}" target="_blank" class="flex-1 min-w-0 p-4 border rounded-2xl {{ cfg.border }} {{ cfg.card }} hover:translate-y-[-4px] transition-all duration-300 block text-left">
                                 <h4 class="font-bold text-[13px] truncate mb-1">{{ repo.name }}</h4>
                                 <p class="text-[11px] {{ cfg.secondary }} line-clamp-2 mb-3 h-8 leading-snug">{{ repo.description or "No description provided." }}</p>
                                 <div class="flex justify-between items-center text-[11px] font-bold">
@@ -187,7 +180,7 @@
                                     </span>
                                     <span class="px-2 py-0.5 rounded-md {{ cfg.accent }} border {{ cfg.border }} text-[9px] uppercase">{{ repo.language or "Code" }}</span>
                                 </div>
-                            </div>
+                            </a>
                             {% endfor %}
                         </div>
                     </div>
@@ -213,50 +206,5 @@
             </div>
         </div>
     </div>
-    <script>
-        let followed = false;
-        const originalCount = {{ github_data.followers }};
-        
-        function handleFollow() {
-            if (followed) return;
-            followed = true;
-            
-            // Update Follower Counts
-            const mobileCountEl = document.getElementById("mobile-followers-count");
-            const desktopCountEl = document.getElementById("desktop-followers-count");
-            if (mobileCountEl) {
-                mobileCountEl.textContent = originalCount + 1;
-                mobileCountEl.classList.add("scale-125", "text-green-500");
-                setTimeout(() => mobileCountEl.classList.remove("scale-125"), 300);
-            }
-            if (desktopCountEl) {
-                desktopCountEl.textContent = originalCount + 1;
-                desktopCountEl.classList.add("scale-125", "text-green-500");
-                setTimeout(() => desktopCountEl.classList.remove("scale-125"), 300);
-            }
-            
-            // Update buttons to show Following state
-            const mobileText = document.getElementById("mobile-follow-text");
-            const desktopText = document.getElementById("desktop-follow-text");
-            if (mobileText) mobileText.textContent = "Following";
-            if (desktopText) desktopText.textContent = "Following";
-            
-            const mobileBtn = document.getElementById("mobile-follow-btn");
-            const desktopBtn = document.getElementById("desktop-follow-btn");
-            
-            const disabledClasses = ["opacity-60", "cursor-not-allowed"];
-            if (mobileBtn) {
-                mobileBtn.classList.add(...disabledClasses);
-                mobileBtn.removeAttribute("onclick");
-            }
-            if (desktopBtn) {
-                desktopBtn.classList.add(...disabledClasses);
-                desktopBtn.removeAttribute("onclick");
-            }
-            
-            // Open user's GitHub profile in a new tab to complete follow on GitHub
-            window.open("https://github.com/{{ username }}", "_blank");
-        }
-    </script>
 </body>
 </html>
