@@ -133,7 +133,7 @@
                         
                         let finalUrl = data.card_url;
                         if (finalUrl.startsWith('/') && baseUrl) finalUrl = baseUrl + finalUrl;
-                        setCardUrl(finalUrl);
+                        setCardUrl(`${finalUrl}?t=${Date.now()}`);
                     } catch (err) {
                         setError(err.message || 'API connection error.');
                     } finally {
