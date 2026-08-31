@@ -196,8 +196,39 @@
                         AlertIcon, e('span', null, error)
                     ),
                     // Showcase
-                    e('section', { className: "w-full max-w-[960px] min-h-[500px] flex items-center justify-center relative" },
-                        loading ? e('div', { className: "w-full h-[450px] glass rounded-[3rem] shimmer" }) :
+                    e('section', { className: "w-full max-w-[960px] min-h-[520px] flex items-center justify-center relative" },
+                        loading ? e('div', { className: "w-full h-[540px] glass rounded-[3rem] p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl border border-white/10" },
+                            // Animated ambient background glow
+                            e('div', { className: "absolute w-72 h-72 bg-gradient-to-tr from-blue-600/30 to-purple-600/30 rounded-full blur-[90px] animate-pulse" }),
+                            
+                            // Futuristic Glowing Spinner
+                            e('div', { className: "relative mb-8 flex items-center justify-center" },
+                                e('div', { className: "w-20 h-20 rounded-full border-4 border-t-blue-500 border-r-purple-500 border-b-pink-500 border-l-transparent animate-spin" }),
+                                e('div', { className: "absolute w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-20 blur-md animate-ping" }),
+                                e('div', { className: "absolute w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center" },
+                                    e('div', { className: "w-3 h-3 rounded-full bg-blue-400 animate-pulse" })
+                                )
+                            ),
+                            
+                            // Loading text status
+                            e('h3', { className: "text-xl font-bold text-white mb-2 tracking-wide" }, "Generating Dev Card..."),
+                            e('p', { className: "text-sm text-gray-400 mb-8 max-w-sm text-center font-light" }, "Fetching GitHub profile data and analyzing developer vibe using Gemini AI..."),
+                            
+                            // Step Progress Indicators
+                            e('div', { className: "flex items-center gap-3 text-xs font-mono text-gray-400" },
+                                e('span', { className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 animate-pulse" }, 
+                                    e('span', { className: "w-2 h-2 rounded-full bg-blue-400" }), "GitHub Data"
+                                ),
+                                e('span', { className: "text-gray-600" }, "➔"),
+                                e('span', { className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 animate-pulse", style: { animationDelay: "0.3s" } }, 
+                                    e('span', { className: "w-2 h-2 rounded-full bg-purple-400" }), "AI Vibe Check"
+                                ),
+                                e('span', { className: "text-gray-600" }, "➔"),
+                                e('span', { className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-400 animate-pulse", style: { animationDelay: "0.6s" } }, 
+                                    e('span', { className: "w-2 h-2 rounded-full bg-pink-400" }), "Card Render"
+                                )
+                            )
+                        ) :
                         cardUrl ? e('div', { className: "w-full fade-in-up" },
                             e('div', { className: "md:p-1.5 md:rounded-[3.5rem] overflow-hidden mb-10 relative md:glass md:bg-black/40" },
                                 e('iframe', { src: cardUrl, className: "w-full h-[620px] border-none md:rounded-[2.5rem] bg-transparent", scrolling: "no" })
